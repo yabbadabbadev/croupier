@@ -1,4 +1,8 @@
 import { describe, it, expect } from "vitest";
+import {
+  createDecisionEngine,
+  resolveDecisionConfig,
+} from "../../src/arbiter/decision-engine.js";
 import { RuleDecisionEngine } from "../../src/arbiter/rules.js";
 import type { ClassifySeverityInput } from "../../src/state/types.js";
 
@@ -126,5 +130,64 @@ describe("classifyReviewIssues", () => {
     );
     expect(result.audit).toHaveLength(2);
     expect(result.audit[1].usedFallback).toBe(true);
+  });
+});
+
+describe("resolveDecisionConfig", () => {
+  it("usa rule y 0.8 por defecto", () => {
+    const config = resolveDecisionConfig({} as NodeJS.ProcessEnv);
+    expect(config.engine).toBe("rule");
+    expect(config.confidenceThreshold).toBe(0.8);
+    expect(config.provider?.model).toBe("jev-1.13");
+  });
+
+  it("lee motor, umbral y modelo del entorno", () => {
+    const config = resolveDecisionConfig({
+      CROUPIER_DECISION_ENGINE: "jev",
+      CROUPIER_CONFIDENCE_THRESHOLD: "0.6",
+      TYPESAFE_MODEL: "jev-latest",
+    } as NodeJS.ProcessEnv);
+    expect(config.engine).toBe("jev");
+    expect(config.confidenceThreshold).toBe(0.6);
+    expect(config.provider?.model).toBe("jev-latest");
+  });
+
+  it("ignora un umbral inválido y cae a 0.8", () => {
+    const config = resolveDecisionConfig({
+      CROUPIER_CONFIDENCE_THRESHOLD: "not-a-number",
+    } as NodeJS.ProcessEnv);
+    expect(config.confidenceThreshold).toBe(0.8);
+  });
+});
+
+describe("createDecisionEngine", () => {
+  it("devuelve el motor de reglas para engine=rule", async () => {
+    const engine = await createDecisionEngine(
+      { engine: "rule", confidenceThreshold: 0.8 },
+      {} as NodeJS.ProcessEnv
+    );
+    expect(engine).toBeInstanceOf(RuleDecisionEngine);
+  });
+
+  it("lanza si engine=jev y falta la API key", async () => {
+    await expect(
+      createDecisionEngine({ engine: "jev", confidenceThreshold: 0.8 }, {} as NodeJS.ProcessEnv)
+    ).rejects.toThrow("TYPESAFE_API_KEY");
+  });
+
+  it("inyecta el proveedor resuelto en el factory de Jev", async () => {
+    let received: { apiKey: string; model: string; baseUrl?: string } | undefined;
+    const engine = await createDecisionEngine(
+      { engine: "jev", confidenceThreshold: 0.8, provider: { model: "jev-1.13" } },
+      { TYPESAFE_API_KEY: "secret-key" } as NodeJS.ProcessEnv,
+      {
+        createJevEngine: async (provider) => {
+          received = provider;
+          return new RuleDecisionEngine();
+        },
+      }
+    );
+    expect(received).toEqual({ apiKey: "secret-key", model: "jev-1.13" });
+    expect(engine).toBeInstanceOf(RuleDecisionEngine);
   });
 });
