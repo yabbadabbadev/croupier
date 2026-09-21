@@ -113,7 +113,7 @@ export interface DecisionAuditEntry {
 }
 
 export interface JevProviderConfig {
-  baseUrl?: string; // default "https://api.typesafe.ai/v1"
+  baseUrl?: string; // SDK default ("https://api.typesafe.ai"; el SDK añade /v1)
   apiKey?: string; // resuelto por credenciales; nunca se registra
   apiKeyEnv?: string; // default "TYPESAFE_API_KEY"
   model?: string; // default "jev-1.13"
