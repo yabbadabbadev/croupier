@@ -8,7 +8,7 @@
 
 ## 1. Vision & Core Philosophy
 
-`croupier` es un arnés CLI autónomo para desarrollo frontend modular en TypeScript. Adopta la metáfora del crupier de casino:
+`croupier` es un arnés CLI autónomo para desarrollo frontend modular en TypeScript. Adopta la metáfora del croupier de casino:
 - **Reparte el juego:** Descompone especificaciones y asigna ficheros atómicos a los agentes.
 - **Aplica las reglas de la mesa:** Impone contratos estrictos (TDD, Clean Code, accesibilidad WCAG 2.2 AA).
 - **Valida deterministamente las apuestas:** Ningún código se acepta sin el veredicto conjunto del compilador (`tsc`), la suite de tests (`vitest`), el inspector de accesibilidad en vivo (`chrome-devtools-mcp`) y el árbitro de decisiones no-LLM (Jev Arbiter).
