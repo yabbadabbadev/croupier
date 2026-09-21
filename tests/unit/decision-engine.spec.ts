@@ -54,3 +54,77 @@ describe("RuleDecisionEngine", () => {
     expect(results).toHaveLength(3);
   });
 });
+
+import { classifyReviewIssues } from "../../src/arbiter/decision-engine.js";
+import type {
+  ClassifiedSeverity,
+  DecisionEngine,
+} from "../../src/state/types.js";
+
+class FakeEngine implements DecisionEngine {
+  constructor(private readonly outcome: ClassifiedSeverity[] | Error) {}
+
+  async classifyReviewIssueSeverities(): Promise<ClassifiedSeverity[]> {
+    if (this.outcome instanceof Error) throw this.outcome;
+    return this.outcome;
+  }
+}
+
+const rule = new RuleDecisionEngine();
+
+describe("classifyReviewIssues", () => {
+  it("usa el primario cuando la confianza alcanza el umbral", async () => {
+    const primary = new FakeEngine([
+      { severity: "blocker", confidence: 0.9, engine: "jev" },
+    ]);
+    const result = await classifyReviewIssues(primary, rule, [input("x")], 0.8);
+    expect(result.issues[0].severity).toBe("blocker");
+    expect(result.audit[0]).toMatchObject({ engine: "jev", usedFallback: false });
+  });
+
+  it("cae al fallback por issue cuando la confianza es baja", async () => {
+    const primary = new FakeEngine([
+      { severity: "warning", confidence: 0.5, engine: "jev" },
+    ]);
+    const result = await classifyReviewIssues(
+      primary,
+      rule,
+      [input("uso de `any`")],
+      0.8
+    );
+    expect(result.issues[0].severity).toBe("blocker");
+    expect(result.audit[0]).toMatchObject({
+      engine: "rule",
+      selected: "blocker",
+      confidence: 1,
+      usedFallback: true,
+    });
+  });
+
+  it("cae al fallback total cuando el primario lanza", async () => {
+    const primary = new FakeEngine(new Error("network down"));
+    const result = await classifyReviewIssues(
+      primary,
+      rule,
+      [input("nombre poco claro")],
+      0.8
+    );
+    expect(result.issues[0].severity).toBe("warning");
+    expect(result.audit[0]).toMatchObject({ engine: "rule", usedFallback: true });
+  });
+
+  it("emite una entrada de audit por issue", async () => {
+    const primary = new FakeEngine([
+      { severity: "blocker", confidence: 0.95, engine: "jev" },
+      { severity: "warning", confidence: 0.4, engine: "jev" },
+    ]);
+    const result = await classifyReviewIssues(
+      primary,
+      rule,
+      [input("a"), input("b")],
+      0.8
+    );
+    expect(result.audit).toHaveLength(2);
+    expect(result.audit[1].usedFallback).toBe(true);
+  });
+});
