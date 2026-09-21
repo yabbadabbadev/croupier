@@ -26,3 +26,48 @@ export interface ArbiterEvaluation {
   reason: string;
   remainingRetries: number;
 }
+
+export interface ClassifySeverityInput {
+  issue: ReviewIssue;
+  spec: string | null;
+  targetFiles: string[];
+}
+
+export interface ClassifiedSeverity {
+  severity: Severity;
+  confidence: number;
+  engine: "rule" | "jev";
+}
+
+export interface DecisionEngine {
+  classifyReviewIssueSeverities(
+    inputs: ClassifySeverityInput[]
+  ): Promise<ClassifiedSeverity[]>;
+}
+
+export interface DecisionAuditEntry {
+  point: "review_issue_severity";
+  issueIndex: number;
+  engine: "rule" | "jev";
+  selected: Severity;
+  confidence: number;
+  usedFallback: boolean;
+}
+
+export interface DecisionOutcome {
+  issues: ReviewIssue[];
+  audit: DecisionAuditEntry[];
+}
+
+export interface JevProviderConfig {
+  baseUrl?: string;
+  apiKey?: string;
+  apiKeyEnv?: string;
+  model?: string;
+}
+
+export interface DecisionEngineConfig {
+  engine: "rule" | "jev";
+  confidenceThreshold: number;
+  provider?: JevProviderConfig;
+}
