@@ -112,11 +112,17 @@ export interface DecisionAuditEntry {
   usedFallback: boolean;
 }
 
+export interface JevProviderConfig {
+  baseUrl?: string; // default "https://api.typesafe.ai/v1"
+  apiKey?: string; // resuelto por credenciales; nunca se registra
+  apiKeyEnv?: string; // default "TYPESAFE_API_KEY"
+  model?: string; // default "jev-1.13"
+}
+
 export interface DecisionEngineConfig {
   engine: "rule" | "jev";
   confidenceThreshold: number; // default 0.8
-  apiKey?: string;
-  model?: string; // default "jev-1.13"
+  provider?: JevProviderConfig;
 }
 ```
 
@@ -202,18 +208,27 @@ decisionAudit: Annotation<DecisionAuditEntry[]>({
 
 `reviewIssues` sigue siendo la fuente de la verdad; `decisionAudit` solo registra procedencia. Ripple: añadir el campo al helper `makeState` de `tests/unit/routing.spec.ts`.
 
-## 10. Configuración (entorno)
+## 10. Configuración y credenciales
 
 | Variable | Valores | Default | Uso |
 | --- | --- | --- | --- |
 | `CROUPIER_DECISION_ENGINE` | `rule` \| `jev` | `rule` | Motor primario |
 | `CROUPIER_CONFIDENCE_THRESHOLD` | número | `0.8` | Umbral del gate |
-| `TYPESAFE_API_KEY` | string | — | Solo motor Jev |
-| `TYPESAFE_MODEL` | string | `jev-1.13` | Solo motor Jev |
+| `TYPESAFE_API_KEY` | string | — | Credencial por defecto del motor Jev |
+| `TYPESAFE_MODEL` | string | `jev-1.13` | Modelo Jev |
 
-La dependencia `@typesafe-ai/sdk` se carga mediante `await import(...)` dentro de `createJevDecisionEngine()`. Con `CROUPIER_DECISION_ENGINE=rule` el SDK nunca se carga.
+**Credenciales con precedencia conmutable.** El motor Jev no fija el proveedor: recibe `JevProviderConfig` (`baseUrl`, `apiKeyEnv`, `model`) y resuelve la credencial con esta precedencia:
 
-Desacople del SDK: el motor recibe un `SystemOneClient` con interfaz propia mínima:
+1. `apiKey` explícita en config (no recomendado en ficheros versionados).
+2. Variable de entorno indicada por `apiKeyEnv` (default `TYPESAFE_API_KEY`).
+3. Fichero `.env` del proyecto (vía `dotenv`).
+4. Prompt interactivo (solo en CLI, si falta y el motor es `jev`).
+
+Las claves nunca se escriben en `logs` ni en el estado. Solo se exige la credencial del proveedor **realmente usado**: con `rule` (default) no se requiere ninguna.
+
+**Sobre "una única key".** El endpoint de Jev es propio (`POST {baseUrl}/systemone`, `Authorization: Bearer`), **no** `chat/completions`. Por tanto una sola API key de OpenRouter cubre los nodos LLM generativos (ciclo futuro), pero **no** a Jev por defecto. `baseUrl` queda configurable para permitir enrutar Jev por una pasarela compatible si en el futuro se verifica; mientras tanto, Jev requiere `TYPESAFE_API_KEY` o se usa el motor `rule`.
+
+**Desacople del SDK.** `@typesafe-ai/sdk` se carga con `await import(...)` dentro de `createJevDecisionEngine()`. Con `CROUPIER_DECISION_ENGINE=rule` el SDK nunca se carga. El motor recibe un `SystemOneClient` con interfaz propia mínima:
 
 ```ts
 export interface SystemOneClient {
