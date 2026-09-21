@@ -1,5 +1,5 @@
 import { Annotation } from "@langchain/langgraph";
-import { ReviewIssue, VerificationResult, ArbiterEvaluation } from "./types.js";
+import { ReviewIssue, VerificationResult, ArbiterEvaluation, DecisionAuditEntry } from "./types.js";
 
 export const PipelineAnnotation = Annotation.Root({
   requirement: Annotation<string>(),
@@ -37,6 +37,10 @@ export const PipelineAnnotation = Annotation.Root({
   }),
   reviewIssues: Annotation<ReviewIssue[]>({
     reducer: (_, next) => next,
+    default: () => [],
+  }),
+  decisionAudit: Annotation<DecisionAuditEntry[]>({
+    reducer: (curr, next) => curr.concat(next),
     default: () => [],
   }),
   retriesLeft: Annotation<number>({

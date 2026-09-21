@@ -26,6 +26,7 @@ function makeState(overrides: Partial<PipelineState> = {}): PipelineState {
     a11yIssues: [],
     reviewApproved: false,
     reviewIssues: [],
+    decisionAudit: [],
     retriesLeft: 3,
     logs: [],
     ...overrides,
