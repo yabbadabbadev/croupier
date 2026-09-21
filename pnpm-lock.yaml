@@ -23,6 +23,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.6.0
         version: 1.30.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
+      '@typesafe-ai/sdk':
+        specifier: ^0.6.0
+        version: 0.6.0
       chalk:
         specifier: ^5.4.1
         version: 5.6.2
@@ -605,6 +608,10 @@ packages:
 
   '@types/uuid@10.0.0':
     resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
+
+  '@typesafe-ai/sdk@0.6.0':
+    resolution: {integrity: sha512-IddX+Q0XM+VagOUZFeP7wZjaO4SHMdvnh2zEBdrZZnXedWI3BNK1lKhMx3ayrkFWvVLbVcUHJy6AVZlY+e6Jaw==}
+    engines: {node: '>=20'}
 
   '@vitest/expect@3.2.7':
     resolution: {integrity: sha512-E8eBXaKibuvH2pSZErOjdVb5vF4PbKYcrnluBTYxEk1l/VhhwZg1kZQsdtjq+CsF5CFydf2Rdkz7jDHKSisi3w==}
@@ -1987,6 +1994,8 @@ snapshots:
   '@types/retry@0.12.0': {}
 
   '@types/uuid@10.0.0': {}
+
+  '@typesafe-ai/sdk@0.6.0': {}
 
   '@vitest/expect@3.2.7':
     dependencies:
