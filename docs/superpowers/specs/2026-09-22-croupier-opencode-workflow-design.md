@@ -141,7 +141,8 @@ Modo declarativo por slice:
 ## 11. Estrategia de tests
 
 - Unit tests para `scripts/verify` y `scripts/visual-diff` (deterministas, sin red).
-- Proyecto-fixture con un slice mínimo: smoke test end-to-end que verifica que se generan plan, `progress.md` y `report.html`.
+- Smoke automatizado acotado: cubre la superficie determinista y la validez de configuración (scripts + tests de config de agentes/skill).
+- El bucle LLM completo — plan, política de reportes, gate humano y generación de `report.html` — se valida mediante un procedimiento de aceptación manual documentado, porque requiere un proveedor de modelos en vivo.
 - Prompts de agente: se validan mediante el smoke (no unit-testables directamente).
 
 ## 12. Distribución
@@ -166,5 +167,5 @@ El CLI-harness actual se **retira como camino principal**. Su árbitro determini
 3. El workflow se detiene en un gate humano al cerrar cada slice; no avanza sin aprobación.
 4. Se genera evidencia visual (`report.html`) con capturas antes/después cuando el modo lo pide, sin ensuciar el repo por defecto.
 5. Los permisos de los subagentes impiden ediciones fuera de su scope.
-6. `scripts/verify` y `scripts/visual-diff` tienen tests y pasan; el smoke end-to-end genera plan, `progress.md` y `report.html`.
+6. `scripts/verify` y `scripts/visual-diff` tienen tests y pasan; el smoke automatizado cubre la superficie determinista y la validez de configuración. El checklist de aceptación manual cubre los artefactos del bucle en vivo (plan, `progress.md` y `report.html`).
 7. Ningún agente del workflow fija un `model`; los modelos son parametrizables por el usuario desde la config de opencode (con `{env:...}` soportado) y los subagentes heredan el del orquestador por defecto.

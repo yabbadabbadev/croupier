@@ -35,9 +35,9 @@ Procedimiento del orquestador. Un slice a la vez, con verificación determinista
 
 ## Política de reportes
 
-- `ignore` (default si no hay respuesta): reportes en `.croupier/reports/<slice>/`, no versionados.
+- `ask` (default): pregunta al humano en el gate si quiere conservar/commitear; si no responde, cae a `ignore` (nunca bloquea).
 - `commit`: reportes en `docs/reports/<slice>/`, versionados.
-- `ask`: pregunta al humano en el gate si quiere conservar/commitear.
+- `ignore`: reportes en `.croupier/reports/<slice>/`, no versionados.
 
 ## Determinismo
 

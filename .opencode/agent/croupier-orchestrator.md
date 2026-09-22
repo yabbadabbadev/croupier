@@ -3,7 +3,12 @@ description: "Orquesta el workflow croupier por slices: planifica, despacha suba
 mode: primary
 temperature: 0.1
 permission:
-  edit: deny
+  edit:
+    "*": deny
+    "progress.md": allow
+    "**/progress.md": allow
+    ".croupier/reports/**": allow
+    "docs/reports/**": allow
   bash: allow
   skill: allow
   task:

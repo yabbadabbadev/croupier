@@ -27,7 +27,7 @@ Se admite `{env:VAR}` y `{file:...}`. Reinicia opencode tras el cambio.
 
 ## Política de reportes
 
-`ignore` (default), `commit` o `ask`. Ver la skill `croupier-workflow`.
+`ask` (default), `commit` o `ignore`; si el humano no responde en el gate, cae a `ignore` (no bloquea). Ver la skill `croupier-workflow`.
 
 ## Checklist de aceptación manual
 
