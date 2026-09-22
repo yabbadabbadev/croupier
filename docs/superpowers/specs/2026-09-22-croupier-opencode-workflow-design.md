@@ -35,7 +35,7 @@ No se parte de cero en conocimiento: el árbitro determinista (`evaluateVerifica
 Se adopta el **enfoque opencode-native con endurecimiento progresivo**:
 
 1. **Agente orquestador (primario)** guiado por una **skill** de procedimiento. El agente decide; la skill fija el orden y los gates.
-2. **Subagentes especialistas** declarados en `.opencode/agents/`, con permisos acotados (`permission`), modelo y prompt propios.
+2. **Subagentes especialistas** declarados en `.opencode/agents/`, con permisos acotados (`permission`), prompt y perfil de especialidad propios (el modelo lo elige el usuario; ver §4.5).
 3. **Scripts deterministas** (no agentes) para los invariantes: verificación (`tsc`+`vitest`) y diff visual. Sin LLM.
 4. **Endurecer a plugin** (custom tools) solo donde la práctica demuestre que el agente es errático o caro.
 
@@ -49,15 +49,17 @@ Todo vive bajo `.opencode/` del repositorio, más `scripts/`.
 
 ### 4.1 Agente primario
 
-- **`orchestrator`** — dueño del workflow. Permisos: `task` permitido únicamente al roster de subagentes; `edit: deny` (no toca código directo); `bash: allow`; `skill: allow`. Modelo capaz.
+- **`croupier-orchestrator`** — dueño del workflow. Permisos: `task` permitido únicamente al roster `croupier-*`; `edit: deny` (no toca código directo); `bash: allow`; `skill: allow`.
 
 ### 4.2 Subagentes (`mode: subagent`)
 
-- **`planner`** — convierte un slice en plan de implementación, apoyándose en superpowers `writing-plans`. Escritura **solo** en `docs/superpowers/plans/`.
-- **`test-writer`** — fase roja TDD. Edita **solo** ficheros de test; `bash` para ejecutar vitest.
-- **`implementer`** — implementa el slice. Edita **solo** `targetFiles`; `bash` para tests/typecheck.
-- **`reviewer`** — read-only; `bash` limitado a `git diff` y similares. Emite issues con severidad (`blocker`/`warning`).
-- **`visual-reporter`** — usa las tools de `chrome-devtools-mcp` (`take_screenshot`, `take_snapshot`, `list_console_messages`, `lighthouse_audit`, `resize_page`, `navigate_page`); escribe **solo** en el directorio de reportes; ejecuta el script de diff visual.
+Los nombres van **namespaced con prefijo `croupier-`** para no colisionar con agentes propios del usuario. Los subagentes que no deban aparecer en el autocompletado se marcan `hidden: true` e invocables solo por el orquestador vía `Task`.
+
+- **`croupier-planner`** — convierte un slice en plan de implementación, apoyándose en superpowers `writing-plans`. Escritura **solo** en `docs/superpowers/plans/`.
+- **`croupier-test-writer`** — fase roja TDD. Edita **solo** ficheros de test; `bash` para ejecutar vitest.
+- **`croupier-implementer`** — implementa el slice. Edita **solo** `targetFiles`; `bash` para tests/typecheck.
+- **`croupier-reviewer`** — read-only; `bash` limitado a `git diff` y similares. Emite issues con severidad (`blocker`/`warning`).
+- **`croupier-visual-reporter`** — usa las tools de `chrome-devtools-mcp` (`take_screenshot`, `take_snapshot`, `list_console_messages`, `lighthouse_audit`, `resize_page`, `navigate_page`); escribe **solo** en el directorio de reportes; ejecuta el script de diff visual.
 
 ### 4.3 Componentes deterministas (sin LLM)
 
@@ -71,10 +73,11 @@ Todo vive bajo `.opencode/` del repositorio, más `scripts/`.
 ### 4.5 Gestión de modelos y parametrización
 
 - Los agentes del workflow **no fijan `model`** en sus definiciones. Así, por las reglas de opencode, los subagentes heredan el modelo del `orchestrator`, y éste el modelo global configurado. **Cero IDs hardcodeados.**
-- El usuario parametriza desde su propia config de opencode (`opencode.jsonc`), con la precedencia habitual (global → proyecto), p. ej. `agent.orchestrator.model`, `agent.implementer.model`, `agent.reviewer.model`. Esto **pisa** el default heredado sin tocar los ficheros del workflow.
+- El usuario parametriza desde su propia config de opencode (`opencode.jsonc`), con la precedencia habitual (global → proyecto), p. ej. `agent.croupier-orchestrator.model`, `agent.croupier-implementer.model`, `agent.croupier-reviewer.model`. Esto **pisa** el default heredado sin tocar los ficheros del workflow.
 - Se admite interpolación `{env:VAR}` y `{file:...}`, de modo que los modelos pueden venir de variables de entorno (p. ej. `{env:CROUPIER_IMPL_MODEL}`) sin editar la config.
-- Recomendación documentada (no impuesta): modelo capaz para `orchestrator`/`implementer`; uno más rápido/barato para tareas mecánicas (`test-writer`, `visual-reporter`).
-- El workflow **no lee `opencode.jsonc` desde código propio**: opencode aplica la config a nuestras definiciones de agente. El workflow aporta prompts, permisos y perfil de especialidad; el modelo lo elige el usuario.
+- Recomendación documentada (no impuesta): modelo capaz para `croupier-orchestrator`/`croupier-implementer`; uno más rápido/barato para tareas mecánicas (`croupier-test-writer`, `croupier-visual-reporter`).
+- **El workflow aporta sus propias definiciones de agente** en `.opencode/agents/` (o `~/.config/opencode/agents/` si es global); opencode las carga automáticamente. La `opencode.jsonc` del usuario es **opcional**: solo para pisar claves (modelo, permisos, temperature). Si no menciona un subagente, se usa su definición del workflow sin cambios; no hay que declararlos a mano.
+- El workflow **no lee `opencode.jsonc` desde código propio**: opencode fusiona la config y la aplica a nuestras definiciones de agente. El workflow aporta prompts, permisos y perfil de especialidad; el modelo lo elige el usuario.
 
 ## 5. Formato de spec y slices
 
@@ -151,7 +154,7 @@ El CLI-harness actual se **retira como camino principal**. Su árbitro determini
 
 ## 14. Decisiones abiertas
 
-- Nombre definitivo del workflow.
+- Nombre definitivo del workflow (y del prefijo de agente; el actual `croupier-` es provisional).
 - Verificación como script (arranque) vs custom tool de plugin (endurecimiento).
 - ¿`visual-reporter` en cada slice o solo cuando el slice toca UI?
 - Especialización de modelos (qué modelo por defecto recomendar en la doc), si se acaba ofreciendo una recomendación concreta.
