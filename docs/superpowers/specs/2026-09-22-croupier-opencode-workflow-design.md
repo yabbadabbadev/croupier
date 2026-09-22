@@ -68,6 +68,14 @@ Todo vive bajo `.opencode/` del repositorio, más `scripts/`.
 
 - **`skills/croupier-workflow/SKILL.md`** — el procedimiento completo (ver §6). Entrada por comando `/croupier` o invocación de la skill.
 
+### 4.5 Gestión de modelos y parametrización
+
+- Los agentes del workflow **no fijan `model`** en sus definiciones. Así, por las reglas de opencode, los subagentes heredan el modelo del `orchestrator`, y éste el modelo global configurado. **Cero IDs hardcodeados.**
+- El usuario parametriza desde su propia config de opencode (`opencode.jsonc`), con la precedencia habitual (global → proyecto), p. ej. `agent.orchestrator.model`, `agent.implementer.model`, `agent.reviewer.model`. Esto **pisa** el default heredado sin tocar los ficheros del workflow.
+- Se admite interpolación `{env:VAR}` y `{file:...}`, de modo que los modelos pueden venir de variables de entorno (p. ej. `{env:CROUPIER_IMPL_MODEL}`) sin editar la config.
+- Recomendación documentada (no impuesta): modelo capaz para `orchestrator`/`implementer`; uno más rápido/barato para tareas mecánicas (`test-writer`, `visual-reporter`).
+- El workflow **no lee `opencode.jsonc` desde código propio**: opencode aplica la config a nuestras definiciones de agente. El workflow aporta prompts, permisos y perfil de especialidad; el modelo lo elige el usuario.
+
 ## 5. Formato de spec y slices
 
 La spec de una feature (producida con brainstorming/writing-plans de superpowers) incluye una sección **`## Slices`** con una lista ordenada; cada slice declara:
@@ -144,9 +152,9 @@ El CLI-harness actual se **retira como camino principal**. Su árbitro determini
 ## 14. Decisiones abiertas
 
 - Nombre definitivo del workflow.
-- Modelo por agente (¿uno para todos, o `planner`/`reviewer` con otro?).
 - Verificación como script (arranque) vs custom tool de plugin (endurecimiento).
 - ¿`visual-reporter` en cada slice o solo cuando el slice toca UI?
+- Especialización de modelos (qué modelo por defecto recomendar en la doc), si se acaba ofreciendo una recomendación concreta.
 
 ## 15. Criterios de aceptación
 
@@ -156,3 +164,4 @@ El CLI-harness actual se **retira como camino principal**. Su árbitro determini
 4. Se genera evidencia visual (`report.html`) con capturas antes/después cuando el modo lo pide, sin ensuciar el repo por defecto.
 5. Los permisos de los subagentes impiden ediciones fuera de su scope.
 6. `scripts/verify` y `scripts/visual-diff` tienen tests y pasan; el smoke end-to-end genera plan, `progress.md` y `report.html`.
+7. Ningún agente del workflow fija un `model`; los modelos son parametrizables por el usuario desde la config de opencode (con `{env:...}` soportado) y los subagentes heredan el del orquestador por defecto.
