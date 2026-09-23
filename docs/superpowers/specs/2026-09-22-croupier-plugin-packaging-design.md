@@ -72,7 +72,14 @@ tests/                       # unit tests
 - **Local/global:** `plugin: ["./ruta/al/plugin"]` o copiar a `~/.config/opencode/plugins/`.
 - **npm:** `plugin: ["@yabbadabbadev/croupier"]` en la config global.
 - Tras instalar o cambiar la config, **reiniciar opencode** (no hay hot-reload).
-- El paquete se publica con `prepublishOnly` (typecheck + test + build).
+
+### 6.1 Convenciones de publicación y CI (adoptadas de `@yabbadabbadev/pepito`)
+
+- **Metadata de paquete:** `repository`, `homepage`, `bugs`, `license: MIT`, `publishConfig.access: public`, `files: ["dist", "assets", "README.md", "CHANGELOG.md"]`, y `exports` con el plugin.
+- **Release automation:** `release-please` (commits convencionales) mantiene un release PR en `main`; al fusionarlo, `release.yml` publica vía **npm trusted publishing (OIDC)** dentro de un environment `npm-publish` con reviewer requerido — sin `NODE_AUTH_TOKEN`. Requiere configurar el trusted publisher en npmjs para `yabbadabbadev/croupier` (**paso manual del humano**).
+- **CI de calidad** (`ci.yml`, adaptado a pnpm): lint, format check, typecheck, build y tests con cobertura; acciones pinneadas por SHA.
+- **Dependabot** con auto-merge de actualizaciones patch.
+- `.nvmrc` para fijar la versión de Node.
 
 ## 7. Spike de validación (primera tarea del plan)
 
@@ -97,6 +104,7 @@ El código del CLI-harness retirado (`src/cli`, `src/graph`, `src/nodes`, `src/a
 
 - **2 (robustecer agentes):** cambia el contenido de `assets/agents` y la skill; no cambia el empaquetado.
 - **3 (feature flags) y 4 (observabilidad):** añaden agentes y servidores MCP; el plugin ya contempla inyectar MCP y agentes adicionales.
+- **5 (compatibilidad cross-browser):** añade un subagente que infiere el target (AGENTS.md, docs, config del bundler/tsconfig/browserslist) y valida compatibilidad con datos de MDN/caniuse; el plugin solo tiene que distribuirlo.
 
 ## 11. Criterios de aceptación
 
@@ -106,10 +114,12 @@ El código del CLI-harness retirado (`src/cli`, `src/graph`, `src/nodes`, `src/a
 4. El spike confirma que opencode carga lo inyectado tras reiniciar.
 5. El código del CLI-harness retirado ya no está en el paquete.
 6. `pnpm run typecheck`, `pnpm test` y `pnpm run build` en verde.
-7. La estructura permite publicar en npm sin cambios (exports, `files`, `prepublishOnly`).
+7. La estructura permite publicar en npm sin cambios (metadata, `exports`, `files`, `publishConfig`).
+8. Existen `ci.yml` (calidad, adaptado a pnpm), `release.yml` (release-please + OIDC) y `.nvmrc`, siguiendo las convenciones de `pepito`. La configuración del trusted publisher en npmjs es un paso manual documentado.
 
 ## 12. Decisiones abiertas
 
 - Nombre definitivo del export del plugin y de las tools (por ahora `croupier_verify`, `croupier_visual_diff`).
 - Si el plugin añade el MCP de chrome-devtools por defecto o de forma opt-in.
 - Formato de los assets (markdown con frontmatter vs manifiesto JSON); por ahora markdown + `yaml`.
+- Adoptar lint/format (`oxlint`/`prettier`) ya, o dejarlo para más adelante.
