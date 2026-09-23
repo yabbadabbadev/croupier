@@ -77,7 +77,8 @@ tests/                       # unit tests
 
 - **Metadata de paquete:** `repository`, `homepage`, `bugs`, `license: MIT`, `publishConfig.access: public`, `files: ["dist", "assets", "README.md", "CHANGELOG.md"]`, y `exports` con el plugin.
 - **Release automation:** `release-please` (commits convencionales) mantiene un release PR en `main`; al fusionarlo, `release.yml` publica vía **npm trusted publishing (OIDC)** dentro de un environment `npm-publish` con reviewer requerido — sin `NODE_AUTH_TOKEN`. Requiere configurar el trusted publisher en npmjs para `yabbadabbadev/croupier` (**paso manual del humano**).
-- **CI de calidad** (`ci.yml`, adaptado a pnpm): lint, format check, typecheck, build y tests con cobertura; acciones pinneadas por SHA.
+- **CI de calidad** (`ci.yml`, adaptado a pnpm): lint (**oxlint**), format check (**prettier**), typecheck, build y tests con cobertura; acciones pinneadas por SHA.
+- **Herramientas de calidad: oxlint y prettier. eslint queda prohibido** en el proyecto (y en cualquier tooling de compatibilidad cross-browser del subsistema 5).
 - **Dependabot** con auto-merge de actualizaciones patch.
 - `.nvmrc` para fijar la versión de Node.
 
@@ -122,4 +123,4 @@ El código del CLI-harness retirado (`src/cli`, `src/graph`, `src/nodes`, `src/a
 - Nombre definitivo del export del plugin y de las tools (por ahora `croupier_verify`, `croupier_visual_diff`).
 - Si el plugin añade el MCP de chrome-devtools por defecto o de forma opt-in.
 - Formato de los assets (markdown con frontmatter vs manifiesto JSON); por ahora markdown + `yaml`.
-- Adoptar lint/format (`oxlint`/`prettier`) ya, o dejarlo para más adelante.
+- Adoptar lint/format (`oxlint`/`prettier`, nunca eslint) ya, o dejarlo para más adelante.
