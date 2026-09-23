@@ -30,6 +30,7 @@
     "@langchain/langgraph": "^0.2.54",
     "@langchain/openai": "^0.4.4",
     "@modelcontextprotocol/sdk": "^1.6.0",
+    "@opencode-ai/plugin": "^1.18.32",
     "@typesafe-ai/sdk": "^0.6.0",
     "chalk": "^5.4.1",
     "dotenv": "^16.4.7",
