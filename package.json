@@ -1,50 +1,39 @@
 {
   "name": "@yabbadabbadev/croupier",
   "version": "0.1.0",
-  "description": "Deterministic multi-agent state-machine pipeline for frontend engineering",
+  "description": "opencode plugin: orchestrated slice-by-slice frontend workflow with specialist subagents",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "croupier": "./dist/cli/index.js"
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/yabbadabbadev/croupier.git" },
+  "homepage": "https://github.com/yabbadabbadev/croupier",
+  "bugs": { "url": "https://github.com/yabbadabbadev/croupier/issues" },
+  "main": "dist/plugin.js",
+  "types": "dist/plugin.d.ts",
+  "exports": {
+    ".": { "types": "./dist/plugin.d.ts", "import": "./dist/plugin.js" }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "ARCHITECTURE_SPEC.md"
-  ],
-  "engines": {
-    "node": ">=20.0.0"
-  },
+  "files": ["dist", "assets", "README.md", "CHANGELOG.md"],
+  "publishConfig": { "access": "public" },
+  "engines": { "node": ">=20.0.0" },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm run typecheck && pnpm run test && pnpm run build"
+    "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run build"
   },
   "dependencies": {
-    "@clack/prompts": "^0.8.2",
-    "@langchain/core": "^0.3.40",
-    "@langchain/langgraph": "^0.2.54",
-    "@langchain/openai": "^0.4.4",
-    "@modelcontextprotocol/sdk": "^1.6.0",
     "@opencode-ai/plugin": "^1.18.32",
-    "@typesafe-ai/sdk": "^0.6.0",
-    "chalk": "^5.4.1",
-    "dotenv": "^16.4.7",
-    "execa": "^9.5.2",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
-    "zod": "^3.24.2"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/node": "^22.13.9",
     "@types/pngjs": "^6.0.5",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2",
-    "vitest": "^3.0.7",
-    "yaml": "^2.9.1"
+    "vitest": "^3.0.7"
   }
 }
