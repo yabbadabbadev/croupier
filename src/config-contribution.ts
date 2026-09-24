@@ -26,6 +26,40 @@ export interface ConfigContribution {
   mcp: Record<string, McpContribution>;
 }
 
+import { join } from "node:path";
+import { loadAgentDefinitions, loadCommand, skillsDir } from "./assets.js";
+
+export interface BuildOptions {
+  mcp?: boolean;
+}
+
+export async function buildConfigContribution(
+  assetsDir: string,
+  options: BuildOptions = {}
+): Promise<ConfigContribution> {
+  const loaded = await loadAgentDefinitions(assetsDir);
+  const agents: Record<string, AgentConfigContribution> = {};
+  for (const agent of loaded) agents[agent.name] = agent.config;
+
+  const command = await loadCommand(assetsDir);
+  const includeMcp = options.mcp !== false;
+
+  return {
+    agents,
+    ...(command ? { command } : {}),
+    skillsPaths: [skillsDir(assetsDir)],
+    mcp: includeMcp
+      ? {
+          "chrome-devtools": {
+            type: "local",
+            command: ["npx", "-y", "chrome-devtools-mcp@latest", "--headless", "--isolated"],
+            enabled: true,
+          },
+        }
+      : {},
+  };
+}
+
 export function applyConfigContribution(
   cfg: Record<string, any>,
   contribution: ConfigContribution

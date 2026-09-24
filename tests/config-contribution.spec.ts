@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyConfigContribution } from "../src/config-contribution.js";
+import { applyConfigContribution, buildConfigContribution } from "../src/config-contribution.js";
 
 describe("applyConfigContribution", () => {
   it("inyecta agentes, comando, skills y mcp en una config vacía", () => {
@@ -74,5 +74,27 @@ describe("applyConfigContribution", () => {
     expect(cfg.skills.paths).toEqual(["/pkg/assets/skills"]);
     expect(cfg.mcp["chrome-devtools"].command).toEqual(["custom"]);
     expect(cfg.mcp["chrome-devtools"].enabled).toBe(false);
+  });
+});
+
+describe("buildConfigContribution", () => {
+  it("construye la contribución desde assets", async () => {
+    const contribution = await buildConfigContribution("assets");
+    expect(Object.keys(contribution.agents).sort()).toEqual([
+      "croupier-implementer",
+      "croupier-orchestrator",
+      "croupier-planner",
+      "croupier-reviewer",
+      "croupier-test-writer",
+      "croupier-visual-reporter",
+    ]);
+    expect(contribution.command?.agent).toBe("croupier-orchestrator");
+    expect(contribution.skillsPaths[0]).toMatch(/assets\/skills$/);
+    expect(contribution.mcp["chrome-devtools"].command.join(" ")).toContain("--headless");
+  });
+
+  it("respeta el mcp opcional desactivado", async () => {
+    const contribution = await buildConfigContribution("assets", { mcp: false });
+    expect(contribution.mcp).toEqual({});
   });
 });
