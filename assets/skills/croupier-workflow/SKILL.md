@@ -54,9 +54,11 @@ Procedimiento del orquestador. Un slice a la vez, con verificación determinista
 - Reintentos usados: <n>/3
 
 ## Slices
+
 - [ ] Slice 1 — <título>
 - [ ] Slice 2 — <título>
 
 ## Auditoría
+
 - <fecha> slice <n>: decisión, verificación, revisión
 ```

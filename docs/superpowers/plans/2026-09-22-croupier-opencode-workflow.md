@@ -50,10 +50,12 @@
 ### Task 1: Script determinista `verify`
 
 **Files:**
+
 - Create: `scripts/verify.mjs`
 - Test: `tests/workflow/verify.spec.ts`
 
 **Interfaces:**
+
 - Produces: `summarizeVerification({ typeCheckExitCode, typeCheckOutput, testExitCode, testReport, testOutput })` → `{ passed, typeCheckPassed, unitTestsPassed, output, failedTestNames }`.
 - `testReport` tiene forma de reporter JSON de Vitest/Jest: `{ testResults?: Array<{ name: string, assertionResults?: Array<{ title?: string, fullName?: string, status: string }> }> }`.
 
@@ -62,71 +64,71 @@
 Crear `tests/workflow/verify.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { summarizeVerification } from "../../scripts/verify.mjs";
+import { describe, it, expect } from 'vitest'
+import { summarizeVerification } from '../../scripts/verify.mjs'
 
-describe("summarizeVerification", () => {
-  it("aprueba cuando typecheck y tests pasan", () => {
+describe('summarizeVerification', () => {
+  it('aprueba cuando typecheck y tests pasan', () => {
     const result = summarizeVerification({
       typeCheckExitCode: 0,
-      typeCheckOutput: "",
+      typeCheckOutput: '',
       testExitCode: 0,
       testReport: { testResults: [] },
-      testOutput: "Test Files 1 passed",
-    });
-    expect(result.passed).toBe(true);
-    expect(result.typeCheckPassed).toBe(true);
-    expect(result.unitTestsPassed).toBe(true);
-    expect(result.failedTestNames).toEqual([]);
-  });
+      testOutput: 'Test Files 1 passed',
+    })
+    expect(result.passed).toBe(true)
+    expect(result.typeCheckPassed).toBe(true)
+    expect(result.unitTestsPassed).toBe(true)
+    expect(result.failedTestNames).toEqual([])
+  })
 
-  it("suspende cuando falla el typecheck", () => {
+  it('suspende cuando falla el typecheck', () => {
     const result = summarizeVerification({
       typeCheckExitCode: 2,
-      typeCheckOutput: "TS2322: Type error",
+      typeCheckOutput: 'TS2322: Type error',
       testExitCode: 0,
       testReport: { testResults: [] },
-      testOutput: "",
-    });
-    expect(result.passed).toBe(false);
-    expect(result.typeCheckPassed).toBe(false);
-    expect(result.output).toContain("TS2322");
-  });
+      testOutput: '',
+    })
+    expect(result.passed).toBe(false)
+    expect(result.typeCheckPassed).toBe(false)
+    expect(result.output).toContain('TS2322')
+  })
 
-  it("recoge los nombres de los tests fallidos", () => {
+  it('recoge los nombres de los tests fallidos', () => {
     const result = summarizeVerification({
       typeCheckExitCode: 0,
-      typeCheckOutput: "",
+      typeCheckOutput: '',
       testExitCode: 1,
       testReport: {
         testResults: [
           {
-            name: "tests/button.spec.ts",
+            name: 'tests/button.spec.ts',
             assertionResults: [
-              { fullName: "Button renders label", status: "passed" },
-              { fullName: "Button handles click", status: "failed" },
+              { fullName: 'Button renders label', status: 'passed' },
+              { fullName: 'Button handles click', status: 'failed' },
             ],
           },
         ],
       },
-      testOutput: "",
-    });
-    expect(result.passed).toBe(false);
-    expect(result.failedTestNames).toEqual(["Button handles click"]);
-  });
+      testOutput: '',
+    })
+    expect(result.passed).toBe(false)
+    expect(result.failedTestNames).toEqual(['Button handles click'])
+  })
 
-  it("tolera un report ausente", () => {
+  it('tolera un report ausente', () => {
     const result = summarizeVerification({
       typeCheckExitCode: 0,
-      typeCheckOutput: "",
+      typeCheckOutput: '',
       testExitCode: 1,
       testReport: null,
-      testOutput: "boom",
-    });
-    expect(result.unitTestsPassed).toBe(false);
-    expect(result.failedTestNames).toEqual([]);
-  });
-});
+      testOutput: 'boom',
+    })
+    expect(result.unitTestsPassed).toBe(false)
+    expect(result.failedTestNames).toEqual([])
+  })
+})
 ```
 
 - [ ] **Step 2: Ejecutar el test y verificar que falla**
@@ -138,8 +140,8 @@ Expected: FAIL — `Cannot find module '../../scripts/verify.mjs'`.
 
 ```js
 #!/usr/bin/env node
-import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
 export function summarizeVerification({
   typeCheckExitCode,
@@ -148,64 +150,66 @@ export function summarizeVerification({
   testReport,
   testOutput,
 }) {
-  const failedTestNames = [];
-  const results = testReport?.testResults ?? [];
+  const failedTestNames = []
+  const results = testReport?.testResults ?? []
   for (const file of results) {
     for (const assertion of file.assertionResults ?? []) {
-      if (assertion.status === "failed") {
-        failedTestNames.push(assertion.fullName ?? assertion.title ?? file.name);
+      if (assertion.status === 'failed') {
+        failedTestNames.push(assertion.fullName ?? assertion.title ?? file.name)
       }
     }
   }
 
-  const typeCheckPassed = typeCheckExitCode === 0;
-  const unitTestsPassed = testExitCode === 0;
+  const typeCheckPassed = typeCheckExitCode === 0
+  const unitTestsPassed = testExitCode === 0
 
   return {
     passed: typeCheckPassed && unitTestsPassed,
     typeCheckPassed,
     unitTestsPassed,
-    output: [typeCheckOutput, testOutput].filter(Boolean).join("\n"),
+    output: [typeCheckOutput, testOutput].filter(Boolean).join('\n'),
     failedTestNames,
-  };
+  }
 }
 
 function run(command, args) {
-  return spawnSync(command, args, { encoding: "utf8" });
+  return spawnSync(command, args, { encoding: 'utf8' })
 }
 
 function main() {
-  const typeCheck = run("pnpm", ["exec", "tsc", "--noEmit"]);
-  const reportPath = ".croupier/vitest.json";
-  const tests = run("pnpm", [
-    "exec",
-    "vitest",
-    "run",
-    "--reporter=json",
+  const typeCheck = run('pnpm', ['exec', 'tsc', '--noEmit'])
+  const reportPath = '.croupier/vitest.json'
+  const tests = run('pnpm', [
+    'exec',
+    'vitest',
+    'run',
+    '--reporter=json',
     `--outputFile=${reportPath}`,
-  ]);
+  ])
 
-  let testReport = null;
+  let testReport = null
   try {
-    testReport = JSON.parse(readFileSync(reportPath, "utf8"));
+    testReport = JSON.parse(readFileSync(reportPath, 'utf8'))
   } catch {
-    testReport = null;
+    testReport = null
   }
 
   const result = summarizeVerification({
     typeCheckExitCode: typeCheck.status ?? 1,
-    typeCheckOutput: [typeCheck.stdout, typeCheck.stderr].filter(Boolean).join("\n"),
+    typeCheckOutput: [typeCheck.stdout, typeCheck.stderr]
+      .filter(Boolean)
+      .join('\n'),
     testExitCode: tests.status ?? 1,
     testReport,
-    testOutput: [tests.stdout, tests.stderr].filter(Boolean).join("\n"),
-  });
+    testOutput: [tests.stdout, tests.stderr].filter(Boolean).join('\n'),
+  })
 
-  process.stdout.write(JSON.stringify(result, null, 2));
-  process.exit(result.passed ? 0 : 1);
+  process.stdout.write(JSON.stringify(result, null, 2))
+  process.exit(result.passed ? 0 : 1)
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+  main()
 }
 ```
 
@@ -227,11 +231,13 @@ git commit -m "feat(workflow): add deterministic verify script"
 ### Task 2: Script determinista `visual-diff`
 
 **Files:**
+
 - Modify: `package.json` (devDependencies) y `pnpm-lock.yaml` (vía `pnpm install`)
 - Create: `scripts/visual-diff.mjs`
 - Test: `tests/workflow/visual-diff.spec.ts`
 
 **Interfaces:**
+
 - Consumes: `pixelmatch`, `pngjs`.
 - Produces: `diffPngs(bufferA: Uint8Array, bufferB: Uint8Array, options?)` → `{ diffPixels: number, totalPixels: number, ratio: number, diffPng: Uint8Array }`. Lanza si las dimensiones difieren.
 
@@ -246,46 +252,50 @@ pnpm add -D pixelmatch pngjs
 Crear `tests/workflow/visual-diff.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { PNG } from "pngjs";
-import { diffPngs } from "../../scripts/visual-diff.mjs";
+import { describe, it, expect } from 'vitest'
+import { PNG } from 'pngjs'
+import { diffPngs } from '../../scripts/visual-diff.mjs'
 
-function solidPng(width: number, height: number, rgb: [number, number, number]): Buffer {
-  const png = new PNG({ width, height });
+function solidPng(
+  width: number,
+  height: number,
+  rgb: [number, number, number],
+): Buffer {
+  const png = new PNG({ width, height })
   for (let i = 0; i < png.data.length; i += 4) {
-    png.data[i] = rgb[0];
-    png.data[i + 1] = rgb[1];
-    png.data[i + 2] = rgb[2];
-    png.data[i + 3] = 255;
+    png.data[i] = rgb[0]
+    png.data[i + 1] = rgb[1]
+    png.data[i + 2] = rgb[2]
+    png.data[i + 3] = 255
   }
-  return PNG.sync.write(png);
+  return PNG.sync.write(png)
 }
 
-describe("diffPngs", () => {
-  it("da ratio 0 para imágenes idénticas", () => {
-    const a = solidPng(10, 10, [255, 0, 0]);
-    const b = solidPng(10, 10, [255, 0, 0]);
-    const result = diffPngs(a, b);
-    expect(result.diffPixels).toBe(0);
-    expect(result.ratio).toBe(0);
-    expect(result.totalPixels).toBe(100);
-  });
+describe('diffPngs', () => {
+  it('da ratio 0 para imágenes idénticas', () => {
+    const a = solidPng(10, 10, [255, 0, 0])
+    const b = solidPng(10, 10, [255, 0, 0])
+    const result = diffPngs(a, b)
+    expect(result.diffPixels).toBe(0)
+    expect(result.ratio).toBe(0)
+    expect(result.totalPixels).toBe(100)
+  })
 
-  it("cuenta los píxeles distintos", () => {
-    const a = solidPng(10, 10, [255, 0, 0]);
-    const b = solidPng(10, 10, [0, 0, 255]);
-    const result = diffPngs(a, b);
-    expect(result.diffPixels).toBe(100);
-    expect(result.ratio).toBe(1);
-    expect(result.diffPng.length).toBeGreaterThan(0);
-  });
+  it('cuenta los píxeles distintos', () => {
+    const a = solidPng(10, 10, [255, 0, 0])
+    const b = solidPng(10, 10, [0, 0, 255])
+    const result = diffPngs(a, b)
+    expect(result.diffPixels).toBe(100)
+    expect(result.ratio).toBe(1)
+    expect(result.diffPng.length).toBeGreaterThan(0)
+  })
 
-  it("lanza si las dimensiones difieren", () => {
-    const a = solidPng(10, 10, [0, 0, 0]);
-    const b = solidPng(20, 10, [0, 0, 0]);
-    expect(() => diffPngs(a, b)).toThrow("dimensions");
-  });
-});
+  it('lanza si las dimensiones difieren', () => {
+    const a = solidPng(10, 10, [0, 0, 0])
+    const b = solidPng(20, 10, [0, 0, 0])
+    expect(() => diffPngs(a, b)).toThrow('dimensions')
+  })
+})
 ```
 
 - [ ] **Step 3: Ejecutar el test y verificar que falla**
@@ -297,57 +307,64 @@ Expected: FAIL — `Cannot find module '../../scripts/visual-diff.mjs'`.
 
 ```js
 #!/usr/bin/env node
-import { readFileSync, writeFileSync } from "node:fs";
-import { PNG } from "pngjs";
-import pixelmatch from "pixelmatch";
+import { readFileSync, writeFileSync } from 'node:fs'
+import { PNG } from 'pngjs'
+import pixelmatch from 'pixelmatch'
 
 export function diffPngs(bufferA, bufferB, options = {}) {
-  const a = PNG.sync.read(Buffer.from(bufferA));
-  const b = PNG.sync.read(Buffer.from(bufferB));
+  const a = PNG.sync.read(Buffer.from(bufferA))
+  const b = PNG.sync.read(Buffer.from(bufferB))
 
   if (a.width !== b.width || a.height !== b.height) {
     throw new Error(
-      `Image dimensions differ: ${a.width}x${a.height} vs ${b.width}x${b.height}`
-    );
+      `Image dimensions differ: ${a.width}x${a.height} vs ${b.width}x${b.height}`,
+    )
   }
 
-  const diff = new PNG({ width: a.width, height: a.height });
+  const diff = new PNG({ width: a.width, height: a.height })
   const diffPixels = pixelmatch(a.data, b.data, diff.data, a.width, a.height, {
     threshold: options.threshold ?? 0.1,
-  });
-  const totalPixels = a.width * a.height;
+  })
+  const totalPixels = a.width * a.height
 
   return {
     diffPixels,
     totalPixels,
     ratio: totalPixels === 0 ? 0 : diffPixels / totalPixels,
     diffPng: PNG.sync.write(diff),
-  };
+  }
 }
 
 function main() {
-  const [beforePath, afterPath, diffPath] = process.argv.slice(2);
+  const [beforePath, afterPath, diffPath] = process.argv.slice(2)
   if (!beforePath || !afterPath) {
-    process.stderr.write("usage: visual-diff <before.png> <after.png> [diff.png]\n");
-    process.exit(2);
+    process.stderr.write(
+      'usage: visual-diff <before.png> <after.png> [diff.png]\n',
+    )
+    process.exit(2)
   }
 
-  const result = diffPngs(readFileSync(beforePath), readFileSync(afterPath));
+  const result = diffPngs(readFileSync(beforePath), readFileSync(afterPath))
   if (diffPath) {
-    writeFileSync(diffPath, result.diffPng);
+    writeFileSync(diffPath, result.diffPng)
   }
 
   process.stdout.write(
     JSON.stringify(
-      { ratio: result.ratio, diffPixels: result.diffPixels, totalPixels: result.totalPixels, diffPath: diffPath ?? null },
+      {
+        ratio: result.ratio,
+        diffPixels: result.diffPixels,
+        totalPixels: result.totalPixels,
+        diffPath: diffPath ?? null,
+      },
       null,
-      2
-    )
-  );
+      2,
+    ),
+  )
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+  main()
 }
 ```
 
@@ -369,6 +386,7 @@ git commit -m "feat(workflow): add deterministic pixel-diff script"
 ### Task 3: Roster de agentes y validación
 
 **Files:**
+
 - Modify: `package.json` (devDependencies `yaml`) y `pnpm-lock.yaml`
 - Create: `.opencode/agent/croupier-orchestrator.md`
 - Create: `.opencode/agent/croupier-planner.md`
@@ -379,6 +397,7 @@ git commit -m "feat(workflow): add deterministic pixel-diff script"
 - Test: `tests/workflow/agents.spec.ts`
 
 **Interfaces:**
+
 - Produces: definiciones de agente con frontmatter YAML. Nombres: `croupier-orchestrator` (primary), `croupier-planner`, `croupier-test-writer`, `croupier-implementer`, `croupier-reviewer`, `croupier-visual-reporter` (subagent, hidden).
 
 - [ ] **Step 1: Añadir la dependencia de parseo YAML**
@@ -392,102 +411,106 @@ pnpm add -D yaml
 Crear `tests/workflow/agents.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
-import { parse } from "yaml";
+import { describe, it, expect } from 'vitest'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { parse } from 'yaml'
 
-const AGENTS_DIR = ".opencode/agent";
+const AGENTS_DIR = '.opencode/agent'
 
 interface LoadedAgent {
-  name: string;
-  front: Record<string, any>;
-  body: string;
+  name: string
+  front: Record<string, any>
+  body: string
 }
 
 function loadAgents(): LoadedAgent[] {
   return readdirSync(AGENTS_DIR)
-    .filter((file) => file.endsWith(".md"))
+    .filter((file) => file.endsWith('.md'))
     .map((file) => {
-      const raw = readFileSync(join(AGENTS_DIR, file), "utf8");
-      const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-      if (!match) throw new Error(`Missing frontmatter in ${file}`);
-      return { name: file.replace(/\.md$/, ""), front: parse(match[1]), body: match[2] };
-    });
+      const raw = readFileSync(join(AGENTS_DIR, file), 'utf8')
+      const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+      if (!match) throw new Error(`Missing frontmatter in ${file}`)
+      return {
+        name: file.replace(/\.md$/, ''),
+        front: parse(match[1]),
+        body: match[2],
+      }
+    })
 }
 
-const agents = loadAgents();
-const byName = new Map(agents.map((agent) => [agent.name, agent]));
+const agents = loadAgents()
+const byName = new Map(agents.map((agent) => [agent.name, agent]))
 
-describe("definiciones de agente", () => {
-  it("define exactamente el roster esperado", () => {
-    const names = agents.map((agent) => agent.name).sort();
+describe('definiciones de agente', () => {
+  it('define exactamente el roster esperado', () => {
+    const names = agents.map((agent) => agent.name).sort()
     expect(names).toEqual([
-      "croupier-implementer",
-      "croupier-orchestrator",
-      "croupier-planner",
-      "croupier-reviewer",
-      "croupier-test-writer",
-      "croupier-visual-reporter",
-    ]);
-  });
+      'croupier-implementer',
+      'croupier-orchestrator',
+      'croupier-planner',
+      'croupier-reviewer',
+      'croupier-test-writer',
+      'croupier-visual-reporter',
+    ])
+  })
 
-  it("no fija model en ningún agente", () => {
+  it('no fija model en ningún agente', () => {
     for (const agent of agents) {
-      expect(agent.front.model).toBeUndefined();
+      expect(agent.front.model).toBeUndefined()
     }
-  });
+  })
 
-  it("el orquestador es primary y no hidden", () => {
-    const orchestrator = byName.get("croupier-orchestrator")!;
-    expect(orchestrator.front.mode).toBe("primary");
-    expect(orchestrator.front.hidden).not.toBe(true);
-  });
+  it('el orquestador es primary y no hidden', () => {
+    const orchestrator = byName.get('croupier-orchestrator')!
+    expect(orchestrator.front.mode).toBe('primary')
+    expect(orchestrator.front.hidden).not.toBe(true)
+  })
 
-  it("el orquestador solo puede invocar subagentes croupier-*", () => {
-    const orchestrator = byName.get("croupier-orchestrator")!;
+  it('el orquestador solo puede invocar subagentes croupier-*', () => {
+    const orchestrator = byName.get('croupier-orchestrator')!
     expect(orchestrator.front.permission.task).toMatchObject({
-      "*": "deny",
-      "croupier-*": "allow",
-    });
-  });
+      '*': 'deny',
+      'croupier-*': 'allow',
+    })
+  })
 
-  it("todos los subagentes son subagent y hidden", () => {
+  it('todos los subagentes son subagent y hidden', () => {
     for (const name of [
-      "croupier-planner",
-      "croupier-test-writer",
-      "croupier-implementer",
-      "croupier-reviewer",
-      "croupier-visual-reporter",
+      'croupier-planner',
+      'croupier-test-writer',
+      'croupier-implementer',
+      'croupier-reviewer',
+      'croupier-visual-reporter',
     ]) {
-      const agent = byName.get(name)!;
-      expect(agent.front.mode).toBe("subagent");
-      expect(agent.front.hidden).toBe(true);
+      const agent = byName.get(name)!
+      expect(agent.front.mode).toBe('subagent')
+      expect(agent.front.hidden).toBe(true)
     }
-  });
+  })
 
-  it("el reviewer no puede editar", () => {
-    const reviewer = byName.get("croupier-reviewer")!;
-    expect(reviewer.front.permission.edit).toBe("deny");
-  });
+  it('el reviewer no puede editar', () => {
+    const reviewer = byName.get('croupier-reviewer')!
+    expect(reviewer.front.permission.edit).toBe('deny')
+  })
 
-  it("el visual-reporter limita la edición a reportes", () => {
-    const reporter = byName.get("croupier-visual-reporter")!;
+  it('el visual-reporter limita la edición a reportes', () => {
+    const reporter = byName.get('croupier-visual-reporter')!
     expect(reporter.front.permission.edit).toMatchObject({
-      "*": "deny",
-      "docs/reports/**": "allow",
-      ".croupier/reports/**": "allow",
-    });
-  });
+      '*': 'deny',
+      'docs/reports/**': 'allow',
+      '.croupier/reports/**': 'allow',
+    })
+  })
 
-  it("cada agente tiene descripción y prompt no vacíos", () => {
+  it('cada agente tiene descripción y prompt no vacíos', () => {
     for (const agent of agents) {
-      expect(typeof agent.front.description).toBe("string");
-      expect(agent.front.description.length).toBeGreaterThan(0);
-      expect(agent.body.trim().length).toBeGreaterThan(0);
+      expect(typeof agent.front.description).toBe('string')
+      expect(agent.front.description.length).toBeGreaterThan(0)
+      expect(agent.body.trim().length).toBeGreaterThan(0)
     }
-  });
-});
+  })
+})
 ```
 
 - [ ] **Step 3: Ejecutar el test y verificar que falla**
@@ -528,8 +551,8 @@ hidden: true
 temperature: 0.2
 permission:
   edit:
-    "*": deny
-    "docs/superpowers/plans/**": allow
+    '*': deny
+    'docs/superpowers/plans/**': allow
   bash: deny
 ---
 
@@ -548,10 +571,10 @@ hidden: true
 temperature: 0.1
 permission:
   edit:
-    "*": deny
-    "**/*.spec.ts": allow
-    "**/*.test.ts": allow
-    "tests/**": allow
+    '*': deny
+    '**/*.spec.ts': allow
+    '**/*.test.ts': allow
+    'tests/**': allow
   bash: allow
 ---
 
@@ -589,10 +612,10 @@ temperature: 0.1
 permission:
   edit: deny
   bash:
-    "*": deny
-    "git diff*": allow
-    "git log*": allow
-    "git status*": allow
+    '*': deny
+    'git diff*': allow
+    'git log*': allow
+    'git status*': allow
 ---
 
 Eres el revisor de croupier. Revisas el diff contra la spec y emites issues con severidad (`blocker` o `warning`), señalando fichero y motivo.
@@ -610,13 +633,13 @@ hidden: true
 temperature: 0.1
 permission:
   edit:
-    "*": deny
-    "docs/reports/**": allow
-    ".croupier/reports/**": allow
+    '*': deny
+    'docs/reports/**': allow
+    '.croupier/reports/**': allow
   bash:
-    "*": deny
-    "node scripts/visual-diff.mjs*": allow
-  "chrome-devtools_*": allow
+    '*': deny
+    'node scripts/visual-diff.mjs*': allow
+  'chrome-devtools_*': allow
 ---
 
 Eres el reporter visual de croupier. Usas las tools de `chrome-devtools-mcp` (`navigate_page`, `resize_page`, `take_screenshot`, `take_snapshot`, `list_console_messages`, `lighthouse_audit`) para capturar rutas de la app.
@@ -642,11 +665,13 @@ git commit -m "feat(workflow): declare croupier agent roster with validation"
 ### Task 4: Skill de procedimiento y comando `/croupier`
 
 **Files:**
+
 - Create: `.opencode/skill/croupier-workflow/SKILL.md`
 - Create: `.opencode/command/croupier.md`
 - Test: `tests/workflow/skill-command.spec.ts`
 
 **Interfaces:**
+
 - Consumes: el roster de Task 3 (nombres de subagente), `scripts/verify.mjs` (Task 1), `scripts/visual-diff.mjs` (Task 2).
 - Produces: skill `croupier-workflow` y comando `croupier` (agent `croupier-orchestrator`).
 
@@ -655,62 +680,62 @@ git commit -m "feat(workflow): declare croupier agent roster with validation"
 Crear `tests/workflow/skill-command.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { parse } from "yaml";
+import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { parse } from 'yaml'
 
-const SKILL_PATH = ".opencode/skill/croupier-workflow/SKILL.md";
-const COMMAND_PATH = ".opencode/command/croupier.md";
+const SKILL_PATH = '.opencode/skill/croupier-workflow/SKILL.md'
+const COMMAND_PATH = '.opencode/command/croupier.md'
 
 function frontmatter(raw: string): Record<string, any> {
-  const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-  if (!match) throw new Error("Missing frontmatter");
-  return parse(match[1]);
+  const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+  if (!match) throw new Error('Missing frontmatter')
+  return parse(match[1])
 }
 
-const skillRaw = readFileSync(SKILL_PATH, "utf8");
-const commandRaw = readFileSync(COMMAND_PATH, "utf8");
+const skillRaw = readFileSync(SKILL_PATH, 'utf8')
+const commandRaw = readFileSync(COMMAND_PATH, 'utf8')
 
-describe("skill croupier-workflow", () => {
-  it("declara name igual a la carpeta y una description", () => {
-    const front = frontmatter(skillRaw);
-    expect(front.name).toBe("croupier-workflow");
-    expect(typeof front.description).toBe("string");
-    expect(front.description.length).toBeGreaterThan(0);
-  });
+describe('skill croupier-workflow', () => {
+  it('declara name igual a la carpeta y una description', () => {
+    const front = frontmatter(skillRaw)
+    expect(front.name).toBe('croupier-workflow')
+    expect(typeof front.description).toBe('string')
+    expect(front.description.length).toBeGreaterThan(0)
+  })
 
-  it("describe el flujo por slice y el gate humano", () => {
-    expect(skillRaw).toMatch(/gate humano/i);
-    expect(skillRaw).toContain("progress.md");
-    expect(skillRaw).toContain("scripts/verify.mjs");
-    expect(skillRaw).toContain("scripts/visual-diff.mjs");
-  });
+  it('describe el flujo por slice y el gate humano', () => {
+    expect(skillRaw).toMatch(/gate humano/i)
+    expect(skillRaw).toContain('progress.md')
+    expect(skillRaw).toContain('scripts/verify.mjs')
+    expect(skillRaw).toContain('scripts/visual-diff.mjs')
+  })
 
-  it("nombra a todos los subagentes del roster", () => {
+  it('nombra a todos los subagentes del roster', () => {
     for (const name of [
-      "croupier-planner",
-      "croupier-test-writer",
-      "croupier-implementer",
-      "croupier-reviewer",
-      "croupier-visual-reporter",
+      'croupier-planner',
+      'croupier-test-writer',
+      'croupier-implementer',
+      'croupier-reviewer',
+      'croupier-visual-reporter',
     ]) {
-      expect(skillRaw).toContain(name);
+      expect(skillRaw).toContain(name)
     }
-  });
-});
+  })
+})
 
-describe("comando croupier", () => {
-  it("ejecuta el agente orquestador", () => {
-    const front = frontmatter(commandRaw);
-    expect(front.agent).toBe("croupier-orchestrator");
-    expect(typeof front.description).toBe("string");
-  });
+describe('comando croupier', () => {
+  it('ejecuta el agente orquestador', () => {
+    const front = frontmatter(commandRaw)
+    expect(front.agent).toBe('croupier-orchestrator')
+    expect(typeof front.description).toBe('string')
+  })
 
-  it("tiene un template no vacío", () => {
-    const body = commandRaw.split("---")[2] ?? "";
-    expect(body.trim().length).toBeGreaterThan(0);
-  });
-});
+  it('tiene un template no vacío', () => {
+    const body = commandRaw.split('---')[2] ?? ''
+    expect(body.trim().length).toBeGreaterThan(0)
+  })
+})
 ```
 
 - [ ] **Step 2: Ejecutar el test y verificar que falla**
@@ -720,7 +745,7 @@ Expected: FAIL — `ENOENT` al leer `SKILL.md`.
 
 - [ ] **Step 3: Crear `.opencode/skill/croupier-workflow/SKILL.md`**
 
-```markdown
+````markdown
 ---
 name: croupier-workflow
 description: Use when implementing a spec that defines ordered slices, one slice at a time, with specialist subagents, deterministic verification, and a human approval gate between slices. Trigger on "croupier", "implement next slice", or "workflow por slices".
@@ -777,13 +802,17 @@ Procedimiento del orquestador. Un slice a la vez, con verificación determinista
 - Reintentos usados: <n>/3
 
 ## Slices
+
 - [ ] Slice 1 — <título>
 - [ ] Slice 2 — <título>
 
 ## Auditoría
+
 - <fecha> slice <n>: decisión, verificación, revisión
 ```
-```
+````
+
+````
 
 - [ ] **Step 4: Crear `.opencode/command/croupier.md`**
 
@@ -796,7 +825,7 @@ agent: croupier-orchestrator
 $ARGUMENTS
 
 Si no hay argumentos, continúa el slice activo según `progress.md` y la spec más reciente en `docs/superpowers/specs/`. Sigue la skill `croupier-workflow` y detente en el gate humano al cerrar el slice.
-```
+````
 
 - [ ] **Step 5: Ejecutar el test y verificar que pasa**
 
@@ -816,11 +845,13 @@ git commit -m "feat(workflow): add croupier workflow skill and command"
 ### Task 5: Config de proyecto (MCP) y política de ignorados
 
 **Files:**
+
 - Create: `.opencode/opencode.json`
 - Modify: `.gitignore`
 - Test: `tests/workflow/project-config.spec.ts`
 
 **Interfaces:**
+
 - Produces: config de proyecto que habilita el MCP `chrome-devtools` para el `croupier-visual-reporter`.
 
 - [ ] **Step 1: Escribir el test que falla**
@@ -828,33 +859,33 @@ git commit -m "feat(workflow): add croupier workflow skill and command"
 Crear `tests/workflow/project-config.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
 
-const config = JSON.parse(readFileSync(".opencode/opencode.json", "utf8"));
-const gitignore = readFileSync(".gitignore", "utf8");
+const config = JSON.parse(readFileSync('.opencode/opencode.json', 'utf8'))
+const gitignore = readFileSync('.gitignore', 'utf8')
 
-describe("config de proyecto", () => {
-  it("declara el schema", () => {
-    expect(config.$schema).toBe("https://opencode.ai/config.json");
-  });
+describe('config de proyecto', () => {
+  it('declara el schema', () => {
+    expect(config.$schema).toBe('https://opencode.ai/config.json')
+  })
 
-  it("habilita el MCP de chrome-devtools en local y headless", () => {
-    const mcp = config.mcp?.["chrome-devtools"];
-    expect(mcp).toBeDefined();
-    expect(mcp.type).toBe("local");
-    expect(Array.isArray(mcp.command)).toBe(true);
-    expect(mcp.command.join(" ")).toContain("chrome-devtools-mcp");
-    expect(mcp.command).toContain("--headless");
-    expect(mcp.enabled).toBe(true);
-  });
-});
+  it('habilita el MCP de chrome-devtools en local y headless', () => {
+    const mcp = config.mcp?.['chrome-devtools']
+    expect(mcp).toBeDefined()
+    expect(mcp.type).toBe('local')
+    expect(Array.isArray(mcp.command)).toBe(true)
+    expect(mcp.command.join(' ')).toContain('chrome-devtools-mcp')
+    expect(mcp.command).toContain('--headless')
+    expect(mcp.enabled).toBe(true)
+  })
+})
 
-describe("gitignore", () => {
-  it("ignora el directorio de reportes por defecto", () => {
-    expect(gitignore).toContain(".croupier/");
-  });
-});
+describe('gitignore', () => {
+  it('ignora el directorio de reportes por defecto', () => {
+    expect(gitignore).toContain('.croupier/')
+  })
+})
 ```
 
 - [ ] **Step 2: Ejecutar el test y verificar que falla**
@@ -870,7 +901,13 @@ Expected: FAIL — `ENOENT` al leer `.opencode/opencode.json`.
   "mcp": {
     "chrome-devtools": {
       "type": "local",
-      "command": ["npx", "-y", "chrome-devtools-mcp@latest", "--headless", "--isolated"],
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--headless",
+        "--isolated"
+      ],
       "enabled": true
     }
   }
@@ -903,15 +940,17 @@ git commit -m "feat(workflow): configure chrome-devtools MCP and ignore reports"
 ### Task 6: Documentación de uso y aceptación
 
 **Files:**
+
 - Create: `docs/croupier-workflow.md`
 
 **Interfaces:**
+
 - Consumes: todo lo anterior.
 - Produces: guía de uso, parametrización de modelos y checklist de aceptación manual.
 
 - [ ] **Step 1: Crear `docs/croupier-workflow.md`**
 
-```markdown
+````markdown
 # Croupier Workflow
 
 Workflow opencode-native por repositorio para implementar specs por slices con subagentes y verificación determinista.
@@ -936,6 +975,7 @@ Ningún agente fija `model`. Por defecto, los subagentes heredan el modelo del o
   }
 }
 ```
+````
 
 Se admite `{env:VAR}` y `{file:...}`. Reinicia opencode tras el cambio.
 
@@ -953,7 +993,8 @@ Requiere un proveedor configurado y un repo con dev server para la parte visual.
 4. Al cerrar el slice, se escribe `progress.md` y el flujo se detiene sin aprobación.
 5. Con baseline, se generan `before/`, `after/`, `diff` y `report.html`; sin baseline, solo el estado actual.
 6. Los `blocker` del reviewer devuelven al bucle TDD.
-```
+
+````
 
 - [ ] **Step 2: Verificación completa**
 
@@ -965,7 +1006,7 @@ Expected: typecheck limpio; todos los tests en verde (los 45 previos + los nuevo
 ```bash
 git add docs/croupier-workflow.md
 git commit -m "docs: add croupier workflow usage and acceptance guide"
-```
+````
 
 ---
 

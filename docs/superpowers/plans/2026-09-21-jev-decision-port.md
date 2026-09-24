@@ -43,11 +43,13 @@
 ### Task 1: Tipos base y `RuleDecisionEngine`
 
 **Files:**
+
 - Modify: `src/state/types.ts`
 - Create: `src/arbiter/rules.ts`
 - Test: `tests/unit/decision-engine.spec.ts`
 
 **Interfaces:**
+
 - Consumes: `ReviewIssue`, `Severity` (ya en `src/state/types.ts`).
 - Produces:
   - `ClassifySeverityInput`, `ClassifiedSeverity`, `DecisionEngine`, `DecisionAuditEntry`, `DecisionOutcome`, `JevProviderConfig`, `DecisionEngineConfig` (en `src/state/types.ts`).
@@ -59,48 +61,48 @@ Añadir al final del fichero:
 
 ```ts
 export interface ClassifySeverityInput {
-  issue: ReviewIssue;
-  spec: string | null;
-  targetFiles: string[];
+  issue: ReviewIssue
+  spec: string | null
+  targetFiles: string[]
 }
 
 export interface ClassifiedSeverity {
-  severity: Severity;
-  confidence: number;
-  engine: "rule" | "jev";
+  severity: Severity
+  confidence: number
+  engine: 'rule' | 'jev'
 }
 
 export interface DecisionEngine {
   classifyReviewIssueSeverities(
-    inputs: ClassifySeverityInput[]
-  ): Promise<ClassifiedSeverity[]>;
+    inputs: ClassifySeverityInput[],
+  ): Promise<ClassifiedSeverity[]>
 }
 
 export interface DecisionAuditEntry {
-  point: "review_issue_severity";
-  issueIndex: number;
-  engine: "rule" | "jev";
-  selected: Severity;
-  confidence: number;
-  usedFallback: boolean;
+  point: 'review_issue_severity'
+  issueIndex: number
+  engine: 'rule' | 'jev'
+  selected: Severity
+  confidence: number
+  usedFallback: boolean
 }
 
 export interface DecisionOutcome {
-  issues: ReviewIssue[];
-  audit: DecisionAuditEntry[];
+  issues: ReviewIssue[]
+  audit: DecisionAuditEntry[]
 }
 
 export interface JevProviderConfig {
-  baseUrl?: string;
-  apiKey?: string;
-  apiKeyEnv?: string;
-  model?: string;
+  baseUrl?: string
+  apiKey?: string
+  apiKeyEnv?: string
+  model?: string
 }
 
 export interface DecisionEngineConfig {
-  engine: "rule" | "jev";
-  confidenceThreshold: number;
-  provider?: JevProviderConfig;
+  engine: 'rule' | 'jev'
+  confidenceThreshold: number
+  provider?: JevProviderConfig
 }
 ```
 
@@ -109,62 +111,64 @@ export interface DecisionEngineConfig {
 Crear `tests/unit/decision-engine.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { RuleDecisionEngine } from "../../src/arbiter/rules.js";
-import type { ClassifySeverityInput } from "../../src/state/types.js";
+import { describe, it, expect } from 'vitest'
+import { RuleDecisionEngine } from '../../src/arbiter/rules.js'
+import type { ClassifySeverityInput } from '../../src/state/types.js'
 
 function input(
   description: string,
-  severity: "blocker" | "warning" = "warning"
+  severity: 'blocker' | 'warning' = 'warning',
 ): ClassifySeverityInput {
   return {
-    issue: { file: "src/x.ts", severity, description },
-    spec: "spec",
-    targetFiles: ["src/x.ts"],
-  };
+    issue: { file: 'src/x.ts', severity, description },
+    spec: 'spec',
+    targetFiles: ['src/x.ts'],
+  }
 }
 
-describe("RuleDecisionEngine", () => {
-  const engine = new RuleDecisionEngine();
+describe('RuleDecisionEngine', () => {
+  const engine = new RuleDecisionEngine()
 
-  it("mantiene blocker cuando el issue ya llega como blocker", async () => {
+  it('mantiene blocker cuando el issue ya llega como blocker', async () => {
     const [result] = await engine.classifyReviewIssueSeverities([
-      input("mejora de nombres", "blocker"),
-    ]);
-    expect(result.severity).toBe("blocker");
-    expect(result.engine).toBe("rule");
-    expect(result.confidence).toBe(1);
-  });
+      input('mejora de nombres', 'blocker'),
+    ])
+    expect(result.severity).toBe('blocker')
+    expect(result.engine).toBe('rule')
+    expect(result.confidence).toBe(1)
+  })
 
-  it("promueve a blocker descripciones con patrones críticos", async () => {
+  it('promueve a blocker descripciones con patrones críticos', async () => {
     const critical = [
-      "uso de `any` en la firma",
-      "fallo de accesibilidad WCAG",
-      "posible vulnerabilidad de seguridad",
-      "la type-safety se rompe",
-    ];
+      'uso de `any` en la firma',
+      'fallo de accesibilidad WCAG',
+      'posible vulnerabilidad de seguridad',
+      'la type-safety se rompe',
+    ]
     for (const description of critical) {
-      const [result] = await engine.classifyReviewIssueSeverities([input(description)]);
-      expect(result.severity).toBe("blocker");
+      const [result] = await engine.classifyReviewIssueSeverities([
+        input(description),
+      ])
+      expect(result.severity).toBe('blocker')
     }
-  });
+  })
 
-  it("degrada a warning descripciones no críticas", async () => {
+  it('degrada a warning descripciones no críticas', async () => {
     const [result] = await engine.classifyReviewIssueSeverities([
-      input("nombre de variable poco claro"),
-    ]);
-    expect(result.severity).toBe("warning");
-  });
+      input('nombre de variable poco claro'),
+    ])
+    expect(result.severity).toBe('warning')
+  })
 
-  it("devuelve tantos resultados como entradas", async () => {
+  it('devuelve tantos resultados como entradas', async () => {
     const results = await engine.classifyReviewIssueSeverities([
-      input("a"),
-      input("b"),
-      input("c"),
-    ]);
-    expect(results).toHaveLength(3);
-  });
-});
+      input('a'),
+      input('b'),
+      input('c'),
+    ])
+    expect(results).toHaveLength(3)
+  })
+})
 ```
 
 - [ ] **Step 3: Ejecutar el test y verificar que falla**
@@ -179,7 +183,7 @@ import type {
   ClassifiedSeverity,
   ClassifySeverityInput,
   DecisionEngine,
-} from "../state/types.js";
+} from '../state/types.js'
 
 const CRITICAL_PATTERNS: RegExp[] = [
   /`any`/i,
@@ -194,24 +198,25 @@ const CRITICAL_PATTERNS: RegExp[] = [
   /vulnerab/i,
   /type[- ]?safety/i,
   /tipado/i,
-];
+]
 
 function isCritical(description: string): boolean {
-  return CRITICAL_PATTERNS.some((pattern) => pattern.test(description));
+  return CRITICAL_PATTERNS.some((pattern) => pattern.test(description))
 }
 
 export class RuleDecisionEngine implements DecisionEngine {
   async classifyReviewIssueSeverities(
-    inputs: ClassifySeverityInput[]
+    inputs: ClassifySeverityInput[],
   ): Promise<ClassifiedSeverity[]> {
     return inputs.map((input) => ({
       severity:
-        input.issue.severity === "blocker" || isCritical(input.issue.description)
-          ? "blocker"
-          : "warning",
+        input.issue.severity === 'blocker' ||
+        isCritical(input.issue.description)
+          ? 'blocker'
+          : 'warning',
       confidence: 1,
-      engine: "rule",
-    }));
+      engine: 'rule',
+    }))
   }
 }
 ```
@@ -234,10 +239,12 @@ git commit -m "feat(arbiter): add decision port types and deterministic rule eng
 ### Task 2: Orquestador `classifyReviewIssues` con gate y fallback
 
 **Files:**
+
 - Create: `src/arbiter/decision-engine.ts`
 - Modify: `tests/unit/decision-engine.spec.ts` (añadir describe al final)
 
 **Interfaces:**
+
 - Consumes: `DecisionEngine`, `ClassifiedSeverity`, `ClassifySeverityInput`, `DecisionOutcome` (Task 1).
 - Produces: `classifyReviewIssues(primary, fallback, inputs, confidenceThreshold): Promise<DecisionOutcome>`.
 
@@ -246,79 +253,85 @@ git commit -m "feat(arbiter): add decision port types and deterministic rule eng
 Añadir al final de `tests/unit/decision-engine.spec.ts`:
 
 ```ts
-import { classifyReviewIssues } from "../../src/arbiter/decision-engine.js";
+import { classifyReviewIssues } from '../../src/arbiter/decision-engine.js'
 import type {
   ClassifiedSeverity,
   DecisionEngine,
-} from "../../src/state/types.js";
+} from '../../src/state/types.js'
 
 class FakeEngine implements DecisionEngine {
   constructor(private readonly outcome: ClassifiedSeverity[] | Error) {}
 
   async classifyReviewIssueSeverities(): Promise<ClassifiedSeverity[]> {
-    if (this.outcome instanceof Error) throw this.outcome;
-    return this.outcome;
+    if (this.outcome instanceof Error) throw this.outcome
+    return this.outcome
   }
 }
 
-const rule = new RuleDecisionEngine();
+const rule = new RuleDecisionEngine()
 
-describe("classifyReviewIssues", () => {
-  it("usa el primario cuando la confianza alcanza el umbral", async () => {
+describe('classifyReviewIssues', () => {
+  it('usa el primario cuando la confianza alcanza el umbral', async () => {
     const primary = new FakeEngine([
-      { severity: "blocker", confidence: 0.9, engine: "jev" },
-    ]);
-    const result = await classifyReviewIssues(primary, rule, [input("x")], 0.8);
-    expect(result.issues[0].severity).toBe("blocker");
-    expect(result.audit[0]).toMatchObject({ engine: "jev", usedFallback: false });
-  });
+      { severity: 'blocker', confidence: 0.9, engine: 'jev' },
+    ])
+    const result = await classifyReviewIssues(primary, rule, [input('x')], 0.8)
+    expect(result.issues[0].severity).toBe('blocker')
+    expect(result.audit[0]).toMatchObject({
+      engine: 'jev',
+      usedFallback: false,
+    })
+  })
 
-  it("cae al fallback por issue cuando la confianza es baja", async () => {
+  it('cae al fallback por issue cuando la confianza es baja', async () => {
     const primary = new FakeEngine([
-      { severity: "warning", confidence: 0.5, engine: "jev" },
-    ]);
+      { severity: 'warning', confidence: 0.5, engine: 'jev' },
+    ])
     const result = await classifyReviewIssues(
       primary,
       rule,
-      [input("uso de `any`")],
-      0.8
-    );
-    expect(result.issues[0].severity).toBe("blocker");
+      [input('uso de `any`')],
+      0.8,
+    )
+    expect(result.issues[0].severity).toBe('blocker')
     expect(result.audit[0]).toMatchObject({
-      engine: "rule",
-      selected: "blocker",
+      engine: 'rule',
+      selected: 'blocker',
       confidence: 1,
       usedFallback: true,
-    });
-  });
+    })
+  })
 
-  it("cae al fallback total cuando el primario lanza", async () => {
-    const primary = new FakeEngine(new Error("network down"));
+  it('cae al fallback total cuando el primario lanza', async () => {
+    const primary = new FakeEngine(new Error('network down'))
     const result = await classifyReviewIssues(
       primary,
       rule,
-      [input("nombre poco claro")],
-      0.8
-    );
-    expect(result.issues[0].severity).toBe("warning");
-    expect(result.audit[0]).toMatchObject({ engine: "rule", usedFallback: true });
-  });
+      [input('nombre poco claro')],
+      0.8,
+    )
+    expect(result.issues[0].severity).toBe('warning')
+    expect(result.audit[0]).toMatchObject({
+      engine: 'rule',
+      usedFallback: true,
+    })
+  })
 
-  it("emite una entrada de audit por issue", async () => {
+  it('emite una entrada de audit por issue', async () => {
     const primary = new FakeEngine([
-      { severity: "blocker", confidence: 0.95, engine: "jev" },
-      { severity: "warning", confidence: 0.4, engine: "jev" },
-    ]);
+      { severity: 'blocker', confidence: 0.95, engine: 'jev' },
+      { severity: 'warning', confidence: 0.4, engine: 'jev' },
+    ])
     const result = await classifyReviewIssues(
       primary,
       rule,
-      [input("a"), input("b")],
-      0.8
-    );
-    expect(result.audit).toHaveLength(2);
-    expect(result.audit[1].usedFallback).toBe(true);
-  });
-});
+      [input('a'), input('b')],
+      0.8,
+    )
+    expect(result.audit).toHaveLength(2)
+    expect(result.audit[1].usedFallback).toBe(true)
+  })
+})
 ```
 
 - [ ] **Step 2: Ejecutar y verificar que falla**
@@ -336,46 +349,46 @@ import type {
   DecisionEngine,
   DecisionOutcome,
   ReviewIssue,
-} from "../state/types.js";
+} from '../state/types.js'
 
 export async function classifyReviewIssues(
   primary: DecisionEngine,
   fallback: DecisionEngine,
   inputs: ClassifySeverityInput[],
-  confidenceThreshold: number
+  confidenceThreshold: number,
 ): Promise<DecisionOutcome> {
-  let primaryResults: ClassifiedSeverity[] | null = null;
+  let primaryResults: ClassifiedSeverity[] | null = null
   try {
-    primaryResults = await primary.classifyReviewIssueSeverities(inputs);
+    primaryResults = await primary.classifyReviewIssueSeverities(inputs)
   } catch {
-    primaryResults = null;
+    primaryResults = null
   }
 
-  const fallbackResults = await fallback.classifyReviewIssueSeverities(inputs);
+  const fallbackResults = await fallback.classifyReviewIssueSeverities(inputs)
 
-  const issues: ReviewIssue[] = [];
-  const audit: DecisionAuditEntry[] = [];
+  const issues: ReviewIssue[] = []
+  const audit: DecisionAuditEntry[] = []
 
   inputs.forEach((input, index) => {
-    const primaryResult = primaryResults?.[index];
-    const fallbackResult = fallbackResults[index];
+    const primaryResult = primaryResults?.[index]
+    const fallbackResult = fallbackResults[index]
     const usePrimary =
       primaryResult !== undefined &&
-      primaryResult.confidence >= confidenceThreshold;
-    const chosen = usePrimary ? primaryResult : fallbackResult;
+      primaryResult.confidence >= confidenceThreshold
+    const chosen = usePrimary ? primaryResult : fallbackResult
 
-    issues.push({ ...input.issue, severity: chosen.severity });
+    issues.push({ ...input.issue, severity: chosen.severity })
     audit.push({
-      point: "review_issue_severity",
+      point: 'review_issue_severity',
       issueIndex: index,
       engine: chosen.engine,
       selected: chosen.severity,
       confidence: chosen.confidence,
       usedFallback: !usePrimary,
-    });
-  });
+    })
+  })
 
-  return { issues, audit };
+  return { issues, audit }
 }
 ```
 
@@ -397,11 +410,13 @@ git commit -m "feat(arbiter): add confidence-gated decision orchestration with f
 ### Task 3: `JevDecisionEngine` con cliente inyectable
 
 **Files:**
+
 - Modify: `package.json` (añadir dependencia) y `pnpm-lock.yaml` (vía `pnpm install`)
 - Create: `src/arbiter/jev-decision-engine.ts`
 - Test: `tests/unit/jev-decision-engine.spec.ts`
 
 **Interfaces:**
+
 - Consumes: `ClassifiedSeverity`, `ClassifySeverityInput`, `DecisionEngine`, `ReviewIssue`, `Severity` (Task 1).
 - Produces:
   - `SystemOneAnswer`, `SystemOneClient`, `JevEngineOptions`.
@@ -419,108 +434,114 @@ pnpm add @typesafe-ai/sdk@^0.6.0
 Crear `tests/unit/jev-decision-engine.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
+import { describe, it, expect } from 'vitest'
 import {
   JevDecisionEngine,
   type SystemOneClient,
-} from "../../src/arbiter/jev-decision-engine.js";
-import type { ClassifySeverityInput } from "../../src/state/types.js";
+} from '../../src/arbiter/jev-decision-engine.js'
+import type { ClassifySeverityInput } from '../../src/state/types.js'
 
 function input(description: string): ClassifySeverityInput {
   return {
-    issue: { file: "src/x.ts", severity: "warning", description },
-    spec: "spec atómica",
-    targetFiles: ["src/x.ts"],
-  };
+    issue: { file: 'src/x.ts', severity: 'warning', description },
+    spec: 'spec atómica',
+    targetFiles: ['src/x.ts'],
+  }
 }
 
 function fakeClient(
-  answers: Record<string, { choice: string; confidence: number }>
-): { client: SystemOneClient; calls: Array<{ state: unknown; questions: unknown }> } {
-  const calls: Array<{ state: unknown; questions: unknown }> = [];
+  answers: Record<string, { choice: string; confidence: number }>,
+): {
+  client: SystemOneClient
+  calls: Array<{ state: unknown; questions: unknown }>
+} {
+  const calls: Array<{ state: unknown; questions: unknown }> = []
   const client: SystemOneClient = {
     systemOne: async (req) => {
-      calls.push(req);
-      return { answers };
+      calls.push(req)
+      return { answers }
     },
-  };
-  return { client, calls };
+  }
+  return { client, calls }
 }
 
-describe("JevDecisionEngine", () => {
-  it("mapea choice y confidence a ClassifiedSeverity", async () => {
+describe('JevDecisionEngine', () => {
+  it('mapea choice y confidence a ClassifiedSeverity', async () => {
     const { client } = fakeClient({
-      issue_0: { choice: "blocker", confidence: 0.92 },
-      issue_1: { choice: "warning", confidence: 0.61 },
-    });
-    const engine = new JevDecisionEngine({ client, model: "jev-1.13" });
+      issue_0: { choice: 'blocker', confidence: 0.92 },
+      issue_1: { choice: 'warning', confidence: 0.61 },
+    })
+    const engine = new JevDecisionEngine({ client, model: 'jev-1.13' })
 
-    const results = await engine.classifyReviewIssueSeverities([input("a"), input("b")]);
+    const results = await engine.classifyReviewIssueSeverities([
+      input('a'),
+      input('b'),
+    ])
 
     expect(results).toEqual([
-      { severity: "blocker", confidence: 0.92, engine: "jev" },
-      { severity: "warning", confidence: 0.61, engine: "jev" },
-    ]);
-  });
+      { severity: 'blocker', confidence: 0.92, engine: 'jev' },
+      { severity: 'warning', confidence: 0.61, engine: 'jev' },
+    ])
+  })
 
-  it("hace una sola llamada con una pregunta choice por issue", async () => {
+  it('hace una sola llamada con una pregunta choice por issue', async () => {
     const { client, calls } = fakeClient({
-      issue_0: { choice: "warning", confidence: 0.8 },
-      issue_1: { choice: "warning", confidence: 0.8 },
-    });
-    const engine = new JevDecisionEngine({ client, model: "jev-1.13" });
+      issue_0: { choice: 'warning', confidence: 0.8 },
+      issue_1: { choice: 'warning', confidence: 0.8 },
+    })
+    const engine = new JevDecisionEngine({ client, model: 'jev-1.13' })
 
-    await engine.classifyReviewIssueSeverities([input("a"), input("b")]);
+    await engine.classifyReviewIssueSeverities([input('a'), input('b')])
 
-    expect(calls).toHaveLength(1);
+    expect(calls).toHaveLength(1)
     const questions = calls[0].questions as Record<
       string,
       { type: string; instructions: string }
-    >;
-    expect(Object.keys(questions)).toEqual(["issue_0", "issue_1"]);
-    expect(questions.issue_0.type).toBe("choice");
-    expect(questions.issue_0.instructions).toContain("issues[0]");
-  });
+    >
+    expect(Object.keys(questions)).toEqual(['issue_0', 'issue_1'])
+    expect(questions.issue_0.type).toBe('choice')
+    expect(questions.issue_0.instructions).toContain('issues[0]')
+  })
 
-  it("envía spec, targetFiles e issues en el estado", async () => {
+  it('envía spec, targetFiles e issues en el estado', async () => {
     const { client, calls } = fakeClient({
-      issue_0: { choice: "warning", confidence: 0.8 },
-    });
-    const engine = new JevDecisionEngine({ client, model: "jev-1.13" });
+      issue_0: { choice: 'warning', confidence: 0.8 },
+    })
+    const engine = new JevDecisionEngine({ client, model: 'jev-1.13' })
 
-    await engine.classifyReviewIssueSeverities([input("detalle")]);
+    await engine.classifyReviewIssueSeverities([input('detalle')])
 
     const state = calls[0].state as {
-      spec: string;
-      targetFiles: string[];
-      issues: Array<{ description: string }>;
-    };
-    expect(state.spec).toBe("spec atómica");
-    expect(state.targetFiles).toEqual(["src/x.ts"]);
-    expect(state.issues[0].description).toBe("detalle");
-  });
+      spec: string
+      targetFiles: string[]
+      issues: Array<{ description: string }>
+    }
+    expect(state.spec).toBe('spec atómica')
+    expect(state.targetFiles).toEqual(['src/x.ts'])
+    expect(state.issues[0].description).toBe('detalle')
+  })
 
-  it("no llama al cliente si no hay issues", async () => {
-    const { client, calls } = fakeClient({});
-    const engine = new JevDecisionEngine({ client, model: "jev-1.13" });
+  it('no llama al cliente si no hay issues', async () => {
+    const { client, calls } = fakeClient({})
+    const engine = new JevDecisionEngine({ client, model: 'jev-1.13' })
 
-    const results = await engine.classifyReviewIssueSeverities([]);
+    const results = await engine.classifyReviewIssueSeverities([])
 
-    expect(results).toEqual([]);
-    expect(calls).toHaveLength(0);
-  });
+    expect(results).toEqual([])
+    expect(calls).toHaveLength(0)
+  })
 
-  it("lanza si falta la respuesta de un issue", async () => {
+  it('lanza si falta la respuesta de un issue', async () => {
     const { client } = fakeClient({
-      issue_0: { choice: "warning", confidence: 0.8 },
-    });
-    const engine = new JevDecisionEngine({ client, model: "jev-1.13" });
+      issue_0: { choice: 'warning', confidence: 0.8 },
+    })
+    const engine = new JevDecisionEngine({ client, model: 'jev-1.13' })
 
     await expect(
-      engine.classifyReviewIssueSeverities([input("a"), input("b")])
-    ).rejects.toThrow("issue_1");
-  });
-});
+      engine.classifyReviewIssueSeverities([input('a'), input('b')]),
+    ).rejects.toThrow('issue_1')
+  })
+})
 ```
 
 - [ ] **Step 3: Ejecutar y verificar que falla**
@@ -537,113 +558,118 @@ import type {
   DecisionEngine,
   ReviewIssue,
   Severity,
-} from "../state/types.js";
+} from '../state/types.js'
 
 export interface SystemOneAnswer {
-  choice: string;
-  confidence: number;
+  choice: string
+  confidence: number
 }
 
 export interface SystemOneClient {
   systemOne(req: { state: unknown; questions: unknown }): Promise<{
-    answers: Record<string, SystemOneAnswer>;
-  }>;
+    answers: Record<string, SystemOneAnswer>
+  }>
 }
 
 export interface JevEngineOptions {
-  client: SystemOneClient;
-  model: string;
+  client: SystemOneClient
+  model: string
 }
 
 interface JevState {
-  spec: string | null;
-  targetFiles: string[];
-  issues: ReviewIssue[];
+  spec: string | null
+  targetFiles: string[]
+  issues: ReviewIssue[]
 }
 
 function buildQuestions(count: number): Record<string, unknown> {
-  const questions: Record<string, unknown> = {};
+  const questions: Record<string, unknown> = {}
   for (let i = 0; i < count; i += 1) {
     questions[`issue_${i}`] = {
-      type: "choice",
+      type: 'choice',
       instructions: `Classify the severity of \`issues[${i}]\` for the change described by \`spec\`.`,
       criteria: {
         blocker: {
-          what: "breaks correctness, type-safety, accessibility or acceptance of `spec`",
-          not_for: "style, naming or refactor suggestions",
-          examples: ["uncovered branch in a test", "WCAG failure", "use of `any`"],
+          what: 'breaks correctness, type-safety, accessibility or acceptance of `spec`',
+          not_for: 'style, naming or refactor suggestions',
+          examples: [
+            'uncovered branch in a test',
+            'WCAG failure',
+            'use of `any`',
+          ],
         },
         warning: {
-          what: "improvement that does not block acceptance",
-          not_for: "bugs, a11y failures or type-safety holes",
-          examples: ["unclear name", "minor duplication"],
+          what: 'improvement that does not block acceptance',
+          not_for: 'bugs, a11y failures or type-safety holes',
+          examples: ['unclear name', 'minor duplication'],
         },
       },
-    };
+    }
   }
-  return questions;
+  return questions
 }
 
 export class JevDecisionEngine implements DecisionEngine {
-  private readonly client: SystemOneClient;
-  private readonly model: string;
+  private readonly client: SystemOneClient
+  private readonly model: string
 
   constructor(options: JevEngineOptions) {
-    this.client = options.client;
-    this.model = options.model;
+    this.client = options.client
+    this.model = options.model
   }
 
   async classifyReviewIssueSeverities(
-    inputs: ClassifySeverityInput[]
+    inputs: ClassifySeverityInput[],
   ): Promise<ClassifiedSeverity[]> {
     if (inputs.length === 0) {
-      return [];
+      return []
     }
 
     const state: JevState = {
       spec: inputs[0].spec,
       targetFiles: inputs[0].targetFiles,
       issues: inputs.map((input) => input.issue),
-    };
+    }
 
     const response = await this.client.systemOne({
       state,
       questions: buildQuestions(inputs.length),
-    });
+    })
 
     return inputs.map((_, index) => {
-      const answer = response.answers[`issue_${index}`];
+      const answer = response.answers[`issue_${index}`]
       if (!answer) {
-        throw new Error(`Jev response missing answer for issue_${index}`);
+        throw new Error(`Jev response missing answer for issue_${index}`)
       }
-      const severity: Severity = answer.choice === "blocker" ? "blocker" : "warning";
-      return { severity, confidence: answer.confidence, engine: "jev" };
-    });
+      const severity: Severity =
+        answer.choice === 'blocker' ? 'blocker' : 'warning'
+      return { severity, confidence: answer.confidence, engine: 'jev' }
+    })
   }
 }
 
 export async function createJevDecisionEngine(config: {
-  apiKey: string;
-  model: string;
-  baseUrl?: string;
+  apiKey: string
+  model: string
+  baseUrl?: string
 }): Promise<DecisionEngine> {
-  const sdk = await import("@typesafe-ai/sdk");
+  const sdk = await import('@typesafe-ai/sdk')
   const client = new sdk.TypeSafeClient({
     apiKey: config.apiKey,
     defaultModel: config.model,
     ...(config.baseUrl ? { baseURL: config.baseUrl } : {}),
-  });
+  })
 
   const wrapped: SystemOneClient = {
     systemOne: async (req) => {
       const result = await client.systemOne(
-        req as unknown as Parameters<typeof client.systemOne>[0]
-      );
-      return { answers: result.answers as Record<string, SystemOneAnswer> };
+        req as unknown as Parameters<typeof client.systemOne>[0],
+      )
+      return { answers: result.answers as Record<string, SystemOneAnswer> }
     },
-  };
+  }
 
-  return new JevDecisionEngine({ client: wrapped, model: config.model });
+  return new JevDecisionEngine({ client: wrapped, model: config.model })
 }
 ```
 
@@ -665,10 +691,12 @@ git commit -m "feat(arbiter): add Jev decision engine with injectable SystemOne 
 ### Task 4: Configuración y factory `createDecisionEngine`
 
 **Files:**
+
 - Modify: `src/arbiter/decision-engine.ts`
 - Modify: `tests/unit/decision-engine.spec.ts` (añadir describe al final)
 
 **Interfaces:**
+
 - Consumes: `DecisionEngineConfig`, `JevProviderConfig`, `DecisionEngine`; `RuleDecisionEngine` (Task 1); `classifyReviewIssues` (Task 2).
 - Produces:
   - `resolveDecisionConfig(env?) : DecisionEngineConfig`
@@ -683,66 +711,74 @@ Añadir al final de `tests/unit/decision-engine.spec.ts`:
 import {
   resolveDecisionConfig,
   createDecisionEngine,
-} from "../../src/arbiter/decision-engine.js";
+} from '../../src/arbiter/decision-engine.js'
 
-describe("resolveDecisionConfig", () => {
-  it("usa rule y 0.8 por defecto", () => {
-    const config = resolveDecisionConfig({} as NodeJS.ProcessEnv);
-    expect(config.engine).toBe("rule");
-    expect(config.confidenceThreshold).toBe(0.8);
-    expect(config.provider?.model).toBe("jev-1.13");
-  });
+describe('resolveDecisionConfig', () => {
+  it('usa rule y 0.8 por defecto', () => {
+    const config = resolveDecisionConfig({} as NodeJS.ProcessEnv)
+    expect(config.engine).toBe('rule')
+    expect(config.confidenceThreshold).toBe(0.8)
+    expect(config.provider?.model).toBe('jev-1.13')
+  })
 
-  it("lee motor, umbral y modelo del entorno", () => {
+  it('lee motor, umbral y modelo del entorno', () => {
     const config = resolveDecisionConfig({
-      CROUPIER_DECISION_ENGINE: "jev",
-      CROUPIER_CONFIDENCE_THRESHOLD: "0.6",
-      TYPESAFE_MODEL: "jev-latest",
-    } as NodeJS.ProcessEnv);
-    expect(config.engine).toBe("jev");
-    expect(config.confidenceThreshold).toBe(0.6);
-    expect(config.provider?.model).toBe("jev-latest");
-  });
+      CROUPIER_DECISION_ENGINE: 'jev',
+      CROUPIER_CONFIDENCE_THRESHOLD: '0.6',
+      TYPESAFE_MODEL: 'jev-latest',
+    } as NodeJS.ProcessEnv)
+    expect(config.engine).toBe('jev')
+    expect(config.confidenceThreshold).toBe(0.6)
+    expect(config.provider?.model).toBe('jev-latest')
+  })
 
-  it("ignora un umbral inválido y cae a 0.8", () => {
+  it('ignora un umbral inválido y cae a 0.8', () => {
     const config = resolveDecisionConfig({
-      CROUPIER_CONFIDENCE_THRESHOLD: "not-a-number",
-    } as NodeJS.ProcessEnv);
-    expect(config.confidenceThreshold).toBe(0.8);
-  });
-});
+      CROUPIER_CONFIDENCE_THRESHOLD: 'not-a-number',
+    } as NodeJS.ProcessEnv)
+    expect(config.confidenceThreshold).toBe(0.8)
+  })
+})
 
-describe("createDecisionEngine", () => {
-  it("devuelve el motor de reglas para engine=rule", async () => {
+describe('createDecisionEngine', () => {
+  it('devuelve el motor de reglas para engine=rule', async () => {
     const engine = await createDecisionEngine(
-      { engine: "rule", confidenceThreshold: 0.8 },
-      {} as NodeJS.ProcessEnv
-    );
-    expect(engine).toBeInstanceOf(RuleDecisionEngine);
-  });
+      { engine: 'rule', confidenceThreshold: 0.8 },
+      {} as NodeJS.ProcessEnv,
+    )
+    expect(engine).toBeInstanceOf(RuleDecisionEngine)
+  })
 
-  it("lanza si engine=jev y falta la API key", async () => {
+  it('lanza si engine=jev y falta la API key', async () => {
     await expect(
-      createDecisionEngine({ engine: "jev", confidenceThreshold: 0.8 }, {} as NodeJS.ProcessEnv)
-    ).rejects.toThrow("TYPESAFE_API_KEY");
-  });
+      createDecisionEngine(
+        { engine: 'jev', confidenceThreshold: 0.8 },
+        {} as NodeJS.ProcessEnv,
+      ),
+    ).rejects.toThrow('TYPESAFE_API_KEY')
+  })
 
-  it("inyecta el proveedor resuelto en el factory de Jev", async () => {
-    let received: { apiKey: string; model: string; baseUrl?: string } | undefined;
+  it('inyecta el proveedor resuelto en el factory de Jev', async () => {
+    let received:
+      { apiKey: string; model: string; baseUrl?: string } | undefined
     const engine = await createDecisionEngine(
-      { engine: "jev", confidenceThreshold: 0.8, provider: { model: "jev-1.13" } },
-      { TYPESAFE_API_KEY: "secret-key" } as NodeJS.ProcessEnv,
+      {
+        engine: 'jev',
+        confidenceThreshold: 0.8,
+        provider: { model: 'jev-1.13' },
+      },
+      { TYPESAFE_API_KEY: 'secret-key' } as NodeJS.ProcessEnv,
       {
         createJevEngine: async (provider) => {
-          received = provider;
-          return new RuleDecisionEngine();
+          received = provider
+          return new RuleDecisionEngine()
         },
-      }
-    );
-    expect(received).toEqual({ apiKey: "secret-key", model: "jev-1.13" });
-    expect(engine).toBeInstanceOf(RuleDecisionEngine);
-  });
-});
+      },
+    )
+    expect(received).toEqual({ apiKey: 'secret-key', model: 'jev-1.13' })
+    expect(engine).toBeInstanceOf(RuleDecisionEngine)
+  })
+})
 ```
 
 - [ ] **Step 2: Ejecutar y verificar que falla**
@@ -755,81 +791,78 @@ Expected: FAIL — `resolveDecisionConfig`/`createDecisionEngine` no exportados.
 Añadir a los imports existentes y al final del fichero:
 
 ```ts
-import type {
-  DecisionEngineConfig,
-  JevProviderConfig,
-} from "../state/types.js";
-import { RuleDecisionEngine } from "./rules.js";
+import type { DecisionEngineConfig, JevProviderConfig } from '../state/types.js'
+import { RuleDecisionEngine } from './rules.js'
 ```
 
 ```ts
-export const DEFAULT_CONFIDENCE_THRESHOLD = 0.8;
-export const DEFAULT_TYPESAFE_MODEL = "jev-1.13";
-export const DEFAULT_TYPESAFE_API_KEY_ENV = "TYPESAFE_API_KEY";
+export const DEFAULT_CONFIDENCE_THRESHOLD = 0.8
+export const DEFAULT_TYPESAFE_MODEL = 'jev-1.13'
+export const DEFAULT_TYPESAFE_API_KEY_ENV = 'TYPESAFE_API_KEY'
 
 export interface ResolvedJevProvider {
-  apiKey: string;
-  model: string;
-  baseUrl?: string;
+  apiKey: string
+  model: string
+  baseUrl?: string
 }
 
 export type JevEngineFactory = (
-  provider: ResolvedJevProvider
-) => Promise<DecisionEngine>;
+  provider: ResolvedJevProvider,
+) => Promise<DecisionEngine>
 
 export interface CreateDecisionEngineDeps {
-  createJevEngine?: JevEngineFactory;
+  createJevEngine?: JevEngineFactory
 }
 
 export function resolveDecisionConfig(
-  env: NodeJS.ProcessEnv = process.env
+  env: NodeJS.ProcessEnv = process.env,
 ): DecisionEngineConfig {
-  const rawThreshold = Number(env.CROUPIER_CONFIDENCE_THRESHOLD);
+  const rawThreshold = Number(env.CROUPIER_CONFIDENCE_THRESHOLD)
   const confidenceThreshold =
     Number.isFinite(rawThreshold) && rawThreshold > 0 && rawThreshold <= 1
       ? rawThreshold
-      : DEFAULT_CONFIDENCE_THRESHOLD;
+      : DEFAULT_CONFIDENCE_THRESHOLD
 
   return {
-    engine: env.CROUPIER_DECISION_ENGINE === "jev" ? "jev" : "rule",
+    engine: env.CROUPIER_DECISION_ENGINE === 'jev' ? 'jev' : 'rule',
     confidenceThreshold,
     provider: {
       apiKeyEnv: DEFAULT_TYPESAFE_API_KEY_ENV,
       model: env.TYPESAFE_MODEL ?? DEFAULT_TYPESAFE_MODEL,
     },
-  };
+  }
 }
 
 export async function createDecisionEngine(
   config: DecisionEngineConfig = resolveDecisionConfig(),
   env: NodeJS.ProcessEnv = process.env,
-  deps: CreateDecisionEngineDeps = {}
+  deps: CreateDecisionEngineDeps = {},
 ): Promise<DecisionEngine> {
-  if (config.engine === "rule") {
-    return new RuleDecisionEngine();
+  if (config.engine === 'rule') {
+    return new RuleDecisionEngine()
   }
 
-  const provider: JevProviderConfig = config.provider ?? {};
-  const apiKeyEnv = provider.apiKeyEnv ?? DEFAULT_TYPESAFE_API_KEY_ENV;
-  const apiKey = provider.apiKey ?? env[apiKeyEnv];
+  const provider: JevProviderConfig = config.provider ?? {}
+  const apiKeyEnv = provider.apiKeyEnv ?? DEFAULT_TYPESAFE_API_KEY_ENV
+  const apiKey = provider.apiKey ?? env[apiKeyEnv]
   if (!apiKey) {
     throw new Error(
-      `Missing TypeSafe API key. Set ${apiKeyEnv} or use CROUPIER_DECISION_ENGINE=rule.`
-    );
+      `Missing TypeSafe API key. Set ${apiKeyEnv} or use CROUPIER_DECISION_ENGINE=rule.`,
+    )
   }
 
   const resolved: ResolvedJevProvider = {
     apiKey,
     model: provider.model ?? DEFAULT_TYPESAFE_MODEL,
     ...(provider.baseUrl ? { baseUrl: provider.baseUrl } : {}),
-  };
-
-  if (deps.createJevEngine) {
-    return deps.createJevEngine(resolved);
   }
 
-  const { createJevDecisionEngine } = await import("./jev-decision-engine.js");
-  return createJevDecisionEngine(resolved);
+  if (deps.createJevEngine) {
+    return deps.createJevEngine(resolved)
+  }
+
+  const { createJevDecisionEngine } = await import('./jev-decision-engine.js')
+  return createJevDecisionEngine(resolved)
 }
 ```
 
@@ -851,12 +884,14 @@ git commit -m "feat(arbiter): resolve decision config and build engine with lazy
 ### Task 5: Estado `decisionAudit` y política de review
 
 **Files:**
+
 - Modify: `src/state/pipeline-state.ts`
 - Create: `src/arbiter/review-policy.ts`
 - Modify: `tests/unit/routing.spec.ts` (`makeState`)
 - Test: `tests/unit/review-policy.spec.ts`
 
 **Interfaces:**
+
 - Consumes: `DecisionAuditEntry`, `ReviewIssue` (Task 1).
 - Produces:
   - Campo `decisionAudit` en `PipelineAnnotation` y en `PipelineState`.
@@ -867,27 +902,31 @@ git commit -m "feat(arbiter): resolve decision config and build engine with lazy
 Crear `tests/unit/review-policy.spec.ts`:
 
 ```ts
-import { describe, it, expect } from "vitest";
-import { deriveReviewApproved } from "../../src/arbiter/review-policy.js";
-import type { ReviewIssue } from "../../src/state/types.js";
+import { describe, it, expect } from 'vitest'
+import { deriveReviewApproved } from '../../src/arbiter/review-policy.js'
+import type { ReviewIssue } from '../../src/state/types.js'
 
-function issue(severity: "blocker" | "warning"): ReviewIssue {
-  return { file: "src/x.ts", severity, description: "detalle" };
+function issue(severity: 'blocker' | 'warning'): ReviewIssue {
+  return { file: 'src/x.ts', severity, description: 'detalle' }
 }
 
-describe("deriveReviewApproved", () => {
-  it("aprueba cuando no hay issues", () => {
-    expect(deriveReviewApproved([])).toBe(true);
-  });
+describe('deriveReviewApproved', () => {
+  it('aprueba cuando no hay issues', () => {
+    expect(deriveReviewApproved([])).toBe(true)
+  })
 
-  it("aprueba cuando solo hay warnings", () => {
-    expect(deriveReviewApproved([issue("warning"), issue("warning")])).toBe(true);
-  });
+  it('aprueba cuando solo hay warnings', () => {
+    expect(deriveReviewApproved([issue('warning'), issue('warning')])).toBe(
+      true,
+    )
+  })
 
-  it("rechaza cuando hay al menos un blocker", () => {
-    expect(deriveReviewApproved([issue("warning"), issue("blocker")])).toBe(false);
-  });
-});
+  it('rechaza cuando hay al menos un blocker', () => {
+    expect(deriveReviewApproved([issue('warning'), issue('blocker')])).toBe(
+      false,
+    )
+  })
+})
 ```
 
 - [ ] **Step 2: Ejecutar y verificar que falla**
@@ -898,10 +937,10 @@ Expected: FAIL — `Cannot find module '../../src/arbiter/review-policy.js'`.
 - [ ] **Step 3: Implementar `src/arbiter/review-policy.ts`**
 
 ```ts
-import type { ReviewIssue } from "../state/types.js";
+import type { ReviewIssue } from '../state/types.js'
 
 export function deriveReviewApproved(issues: ReviewIssue[]): boolean {
-  return !issues.some((issue) => issue.severity === "blocker");
+  return !issues.some((issue) => issue.severity === 'blocker')
 }
 ```
 
@@ -910,7 +949,12 @@ export function deriveReviewApproved(issues: ReviewIssue[]): boolean {
 En el import, añadir `DecisionAuditEntry`:
 
 ```ts
-import { ReviewIssue, VerificationResult, ArbiterEvaluation, DecisionAuditEntry } from "./types.js";
+import {
+  ReviewIssue,
+  VerificationResult,
+  ArbiterEvaluation,
+  DecisionAuditEntry,
+} from './types.js'
 ```
 
 Dentro de `Annotation.Root({ ... })`, tras `reviewIssues`:
@@ -948,9 +992,11 @@ git commit -m "feat(state): add decisionAudit and deterministic review approval 
 ### Task 6: Exports públicos y verificación final
 
 **Files:**
+
 - Modify: `src/index.ts`
 
 **Interfaces:**
+
 - Consumes: todo lo anterior.
 - Produces: API pública del paquete que incluye los nuevos módulos.
 
@@ -959,10 +1005,10 @@ git commit -m "feat(state): add decisionAudit and deterministic review approval 
 Añadir tras las líneas existentes:
 
 ```ts
-export * from "./arbiter/rules.js";
-export * from "./arbiter/decision-engine.js";
-export * from "./arbiter/jev-decision-engine.js";
-export * from "./arbiter/review-policy.js";
+export * from './arbiter/rules.js'
+export * from './arbiter/decision-engine.js'
+export * from './arbiter/jev-decision-engine.js'
+export * from './arbiter/review-policy.js'
 ```
 
 - [ ] **Step 2: Verificación completa**

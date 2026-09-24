@@ -106,12 +106,12 @@ Presupuesto de reintentos por slice: default **3**, configurable.
 
 ## 7. Artefactos y política de versionado
 
-| Artefacto | Naturaleza | Versionado |
-| --- | --- | --- |
-| `docs/superpowers/specs/<feature>-design.md` | estado/texto | sí |
-| `docs/superpowers/plans/<slice>.md` | estado/texto | sí |
-| `progress.md` | estado/texto | sí |
-| `docs/reports/<slice>/**` (PNG, HTML) | evidencia visual | según política |
+| Artefacto                                    | Naturaleza       | Versionado     |
+| -------------------------------------------- | ---------------- | -------------- |
+| `docs/superpowers/specs/<feature>-design.md` | estado/texto     | sí             |
+| `docs/superpowers/plans/<slice>.md`          | estado/texto     | sí             |
+| `progress.md`                                | estado/texto     | sí             |
+| `docs/reports/<slice>/**` (PNG, HTML)        | evidencia visual | según política |
 
 Política de reportes, configurable por repo/slice: `ignore` (en directorio git-ignorado), `commit` (`docs/reports/`), `ask` (pregunta en el gate humano). **Default: `ask`**, con caída a `ignore` si no hay respuesta; nunca bloquea el flujo.
 

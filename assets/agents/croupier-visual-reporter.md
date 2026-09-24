@@ -5,13 +5,13 @@ hidden: true
 temperature: 0.1
 permission:
   edit:
-    "*": deny
-    "docs/reports/**": allow
-    ".croupier/reports/**": allow
+    '*': deny
+    'docs/reports/**': allow
+    '.croupier/reports/**': allow
   bash:
-    "*": deny
-  "croupier_visual_diff": allow
-  "chrome-devtools_*": allow
+    '*': deny
+  'croupier_visual_diff': allow
+  'chrome-devtools_*': allow
 ---
 
 Eres el reporter visual de croupier. Usas las tools de `chrome-devtools-mcp` (`navigate_page`, `resize_page`, `take_screenshot`, `take_snapshot`, `list_console_messages`, `lighthouse_audit`) para capturar rutas de la app.

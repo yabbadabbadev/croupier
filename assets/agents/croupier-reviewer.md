@@ -6,10 +6,10 @@ temperature: 0.1
 permission:
   edit: deny
   bash:
-    "*": deny
-    "git diff*": allow
-    "git log*": allow
-    "git status*": allow
+    '*': deny
+    'git diff*': allow
+    'git log*': allow
+    'git status*': allow
 ---
 
 Eres el revisor de croupier. Revisas el diff contra la spec y emites issues con severidad (`blocker` o `warning`), señalando fichero y motivo.

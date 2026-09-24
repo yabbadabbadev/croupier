@@ -1,4 +1,5 @@
 # Specification: @yabbadabbadev/croupier
+
 **Version:** 1.0.0  
 **Package:** `@yabbadabbadev/croupier`  
 **Binary:** `croupier`  
@@ -9,6 +10,7 @@
 ## 1. Vision & Core Philosophy
 
 `croupier` es un arnés CLI autónomo para desarrollo frontend modular en TypeScript. Adopta la metáfora del croupier de casino:
+
 - **Reparte el juego:** Descompone especificaciones y asigna ficheros atómicos a los agentes.
 - **Aplica las reglas de la mesa:** Impone contratos estrictos (TDD, Clean Code, accesibilidad WCAG 2.2 AA).
 - **Valida deterministamente las apuestas:** Ningún código se acepta sin el veredicto conjunto del compilador (`tsc`), la suite de tests (`vitest`), el inspector de accesibilidad en vivo (`chrome-devtools-mcp`) y el árbitro de decisiones no-LLM (Jev Arbiter).
@@ -63,6 +65,7 @@ croupier/
 ## 3. Package Configuration & Build System
 
 ### 3.1 `package.json`
+
 ```json
 {
   "name": "@yabbadabbadev/croupier",
@@ -74,11 +77,7 @@ croupier/
   "bin": {
     "croupier": "./dist/cli/index.js"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "ARCHITECTURE_SPEC.md"
-  ],
+  "files": ["dist", "README.md", "ARCHITECTURE_SPEC.md"],
   "engines": {
     "node": ">=20.0.0"
   },
@@ -111,26 +110,28 @@ croupier/
 ```
 
 ### 3.2 `tsup.config.ts`
+
 ```typescript
-import { defineConfig } from "tsup";
+import { defineConfig } from 'tsup'
 
 export default defineConfig({
   entry: {
-    index: "src/index.ts",
-    "cli/index": "src/cli/index.ts",
+    index: 'src/index.ts',
+    'cli/index': 'src/cli/index.ts',
   },
-  format: ["esm"],
+  format: ['esm'],
   dts: true,
   clean: true,
   sourcemap: true,
-  target: "node20",
+  target: 'node20',
   banner: {
-    js: "#!/usr/bin/env node",
+    js: '#!/usr/bin/env node',
   },
-});
+})
 ```
 
 ### 3.3 `tsconfig.json`
+
 ```json
 {
   "compilerOptions": {
@@ -161,38 +162,40 @@ export default defineConfig({
 ## 4. State Definition & Contract Schemas
 
 ### 4.1 `src/state/types.ts`
+
 ```typescript
-export type Severity = "blocker" | "warning";
+export type Severity = 'blocker' | 'warning'
 
 export interface ReviewIssue {
-  file: string;
-  line?: number;
-  severity: Severity;
-  description: string;
+  file: string
+  line?: number
+  severity: Severity
+  description: string
 }
 
 export interface VerificationResult {
-  passed: boolean;
-  typeCheckPassed: boolean;
-  unitTestsPassed: boolean;
-  output: string;
-  failedTestNames: string[];
+  passed: boolean
+  typeCheckPassed: boolean
+  unitTestsPassed: boolean
+  output: string
+  failedTestNames: string[]
 }
 
-export type ArbiterAction = 
-  | "PROCEED_TO_A11Y"
-  | "RETRY_IMPLEMENTATION"
-  | "ESCALATE_LIMIT_REACHED"
-  | "ESCALATE_CRITICAL_FAILURE";
+export type ArbiterAction =
+  | 'PROCEED_TO_A11Y'
+  | 'RETRY_IMPLEMENTATION'
+  | 'ESCALATE_LIMIT_REACHED'
+  | 'ESCALATE_CRITICAL_FAILURE'
 
 export interface ArbiterEvaluation {
-  action: ArbiterAction;
-  reason: string;
-  remainingRetries: number;
+  action: ArbiterAction
+  reason: string
+  remainingRetries: number
 }
 ```
 
 ### 4.2 `src/state/pipeline-state.ts`
+
 ```typescript
 import { Annotation } from "@langchain/langgraph";
 import { ReviewIssue, VerificationResult, ArbiterEvaluation } from "./types.js";
@@ -255,41 +258,41 @@ export type PipelineState = typeof PipelineAnnotation.State;
 El módulo `src/arbiter/jev-arbiter.ts` procesa el estado de forma completamente funcional y determinista, sin generar tokens de lenguaje ni introducir latencia autoregresiva:
 
 ```typescript
-import { VerificationResult, ArbiterEvaluation } from "../state/types.js";
+import { VerificationResult, ArbiterEvaluation } from '../state/types.js'
 
 export function evaluateVerificationState(
   verification: VerificationResult | null,
-  retriesLeft: number
+  retriesLeft: number,
 ): ArbiterEvaluation {
   if (!verification) {
     return {
-      action: "ESCALATE_CRITICAL_FAILURE",
-      reason: "No se obtuvo resultado de ejecución de pruebas.",
+      action: 'ESCALATE_CRITICAL_FAILURE',
+      reason: 'No se obtuvo resultado de ejecución de pruebas.',
       remainingRetries: retriesLeft,
-    };
+    }
   }
 
   if (verification.passed) {
     return {
-      action: "PROCEED_TO_A11Y",
-      reason: "TypeScript y suite de Vitest superados con éxito.",
+      action: 'PROCEED_TO_A11Y',
+      reason: 'TypeScript y suite de Vitest superados con éxito.',
       remainingRetries: retriesLeft,
-    };
+    }
   }
 
   if (retriesLeft <= 1) {
     return {
-      action: "ESCALATE_LIMIT_REACHED",
-      reason: `Presupuesto de reintentos agotado tras fallos: ${verification.failedTestNames.join(", ")}`,
+      action: 'ESCALATE_LIMIT_REACHED',
+      reason: `Presupuesto de reintentos agotado tras fallos: ${verification.failedTestNames.join(', ')}`,
       remainingRetries: 0,
-    };
+    }
   }
 
   return {
-    action: "RETRY_IMPLEMENTATION",
-    reason: `Fallo detectado (${verification.typeCheckPassed ? "Tests" : "Tipado"}). Reintentos restantes: ${retriesLeft - 1}`,
+    action: 'RETRY_IMPLEMENTATION',
+    reason: `Fallo detectado (${verification.typeCheckPassed ? 'Tests' : 'Tipado'}). Reintentos restantes: ${retriesLeft - 1}`,
     remainingRetries: retriesLeft - 1,
-  };
+  }
 }
 ```
 
@@ -298,27 +301,32 @@ export function evaluateVerificationState(
 ## 6. Nodes & External Tooling Contracts
 
 ### 6.1 `orchestrator.node.ts` (LLM via DeepSeek)
+
 - **Input:** `state.requirement`.
 - **Output:** `spec` atómico en Markdown con firmas de interfaces, `targetFiles: string[]`, `testFiles: string[]` y `retriesLeft: 3`.
 - **Restricción:** No toca código de producción ni genera tests; desglosa contratos y localiza el árbol de dependencias.
 
 ### 6.2 `test-writer.node.ts` (LLM via DeepSeek)
+
 - **Input:** `state.spec` y `state.testFiles`.
 - **Output:** Archivos de prueba creados físicamente en disco (`*.spec.ts` o `*.spec.tsx`) utilizando Vitest y `@testing-library/react`.
 - **Restricción:** TDD estricto. Las aserciones deben validar el comportamiento esperado antes de que exista la implementación (fase Red).
 
 ### 6.3 `implementer.node.ts` (LLM via DeepSeek)
+
 - **Input:** `state.spec`, `state.targetFiles`, `state.verification.output`, `state.a11yIssues`, `state.reviewIssues`.
 - **Output:** Archivos modificados o creados en `state.targetFiles`.
 - **Restricción:** Solo puede escribir en los ficheros declarados en `targetFiles`. Debe cumplir principios de Clean Code, modularidad y convención BEM para clases CSS si procede.
 
 ### 6.4 `verifier.node.ts` (CLI Nativo Determinista)
+
 - **Mecanismo:** Ejecuta mediante subproceso:
   1. `pnpm tsc --noEmit`
   2. `pnpm vitest run [testFiles] --reporter=json`
 - **Output:** Produce `VerificationResult` con parsing de errores y lista de tests fallidos. No llama a LLMs.
 
 ### 6.5 `a11y-visual.node.ts` (MCP Client + Chrome DevTools)
+
 - **Mecanismo:**
   1. Conecta con `chrome-devtools-mcp` vía stdio con `@modelcontextprotocol/sdk`.
   2. Navega a la URL local de desarrollo o render del componente (`http://localhost:5173`).
@@ -326,6 +334,7 @@ export function evaluateVerificationState(
 - **Output:** `a11yPassed: boolean` y `a11yIssues: string[]`.
 
 ### 6.6 `reviewer.node.ts` (LLM via DeepSeek)
+
 - **Input:** `git diff` de `state.targetFiles` contra la rama base y `state.spec`.
 - **Output:** `reviewApproved: boolean` y lista estructurada de `ReviewIssue`.
 - **Restricción:** Verifica ausencia de tipos `any`, cumplimiento de Clean Code, mantenibilidad y cobertura de los requerimientos originales.
@@ -401,41 +410,48 @@ export function evaluateVerificationState(
 ```
 
 ### 7.2 Lógica de Enrutado (`src/graph/routing.ts`)
-```typescript
-import { END } from "@langchain/langgraph";
-import { PipelineState } from "../state/pipeline-state.js";
 
-export function routeAfterArbiter(state: PipelineState): "a11y_visual" | "implementer" | typeof END {
-  const evaluation = state.arbiterEvaluation;
-  if (!evaluation) return END;
+```typescript
+import { END } from '@langchain/langgraph'
+import { PipelineState } from '../state/pipeline-state.js'
+
+export function routeAfterArbiter(
+  state: PipelineState,
+): 'a11y_visual' | 'implementer' | typeof END {
+  const evaluation = state.arbiterEvaluation
+  if (!evaluation) return END
 
   switch (evaluation.action) {
-    case "PROCEED_TO_A11Y":
-      return "a11y_visual";
-    case "RETRY_IMPLEMENTATION":
-      return "implementer";
-    case "ESCALATE_LIMIT_REACHED":
-    case "ESCALATE_CRITICAL_FAILURE":
+    case 'PROCEED_TO_A11Y':
+      return 'a11y_visual'
+    case 'RETRY_IMPLEMENTATION':
+      return 'implementer'
+    case 'ESCALATE_LIMIT_REACHED':
+    case 'ESCALATE_CRITICAL_FAILURE':
     default:
-      return END;
+      return END
   }
 }
 
-export function routeAfterA11y(state: PipelineState): "code_review" | "implementer" | typeof END {
+export function routeAfterA11y(
+  state: PipelineState,
+): 'code_review' | 'implementer' | typeof END {
   if (state.a11yPassed) {
-    return "code_review";
+    return 'code_review'
   }
   if (state.retriesLeft <= 0) {
-    return END;
+    return END
   }
-  return "implementer";
+  return 'implementer'
 }
 
-export function routeAfterReview(state: PipelineState): typeof END | "implementer" {
+export function routeAfterReview(
+  state: PipelineState,
+): typeof END | 'implementer' {
   if (state.reviewApproved || state.retriesLeft <= 0) {
-    return END;
+    return END
   }
-  return "implementer";
+  return 'implementer'
 }
 ```
 

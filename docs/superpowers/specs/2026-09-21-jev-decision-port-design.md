@@ -20,7 +20,7 @@ Hoy conviven dos formas de decidir:
 
 No existe ningún punto de decisión **intercambiable**: los puntos difusos están enterrados dentro de un nodo LLM, y no hay forma de sustituir ese juicio por una primitiva más barata/rápida/tipificada sin reescribir el nodo.
 
-`typesafe/jev-1.13` ("Jev") es un modelo de **decisiones estructuradas** (System One) que devuelve opciones tipadas y `confidence` calibrada, en ~100 ms y a coste muy bajo. Encaja como motor alternativo para esos puntos difusos. Su documentación insiste, igual que la premisa de croupier, en *"use code when you can"*: el control de flujo pertenece al código y el modelo solo aparece donde hace falta juicio sobre datos no estructurados.
+`typesafe/jev-1.13` ("Jev") es un modelo de **decisiones estructuradas** (System One) que devuelve opciones tipadas y `confidence` calibrada, en ~100 ms y a coste muy bajo. Encaja como motor alternativo para esos puntos difusos. Su documentación insiste, igual que la premisa de croupier, en _"use code when you can"_: el control de flujo pertenece al código y el modelo solo aparece donde hace falta juicio sobre datos no estructurados.
 
 ## 2. Objetivo y no-objetivos
 
@@ -86,43 +86,43 @@ Componentes:
 ```ts
 // src/state/types.ts
 export interface ClassifySeverityInput {
-  issue: ReviewIssue;
-  spec: string | null;
-  targetFiles: string[];
+  issue: ReviewIssue
+  spec: string | null
+  targetFiles: string[]
 }
 
 export interface ClassifiedSeverity {
-  severity: Severity;
-  confidence: number;
-  engine: "rule" | "jev";
+  severity: Severity
+  confidence: number
+  engine: 'rule' | 'jev'
 }
 
 export interface DecisionEngine {
   classifyReviewIssueSeverities(
-    inputs: ClassifySeverityInput[]
-  ): Promise<ClassifiedSeverity[]>;
+    inputs: ClassifySeverityInput[],
+  ): Promise<ClassifiedSeverity[]>
 }
 
 export interface DecisionAuditEntry {
-  point: "review_issue_severity";
-  issueIndex: number;
-  engine: "rule" | "jev";
-  selected: Severity;
-  confidence: number;
-  usedFallback: boolean;
+  point: 'review_issue_severity'
+  issueIndex: number
+  engine: 'rule' | 'jev'
+  selected: Severity
+  confidence: number
+  usedFallback: boolean
 }
 
 export interface JevProviderConfig {
-  baseUrl?: string; // SDK default ("https://api.typesafe.ai"; el SDK añade /v1)
-  apiKey?: string; // resuelto por credenciales; nunca se registra
-  apiKeyEnv?: string; // default "TYPESAFE_API_KEY"
-  model?: string; // default "jev-1.13"
+  baseUrl?: string // SDK default ("https://api.typesafe.ai"; el SDK añade /v1)
+  apiKey?: string // resuelto por credenciales; nunca se registra
+  apiKeyEnv?: string // default "TYPESAFE_API_KEY"
+  model?: string // default "jev-1.13"
 }
 
 export interface DecisionEngineConfig {
-  engine: "rule" | "jev";
-  confidenceThreshold: number; // default 0.8
-  provider?: JevProviderConfig;
+  engine: 'rule' | 'jev'
+  confidenceThreshold: number // default 0.8
+  provider?: JevProviderConfig
 }
 ```
 
@@ -133,8 +133,8 @@ export function classifyReviewIssues(
   primary: DecisionEngine,
   fallback: DecisionEngine,
   inputs: ClassifySeverityInput[],
-  confidenceThreshold: number
-): Promise<{ issues: ReviewIssue[]; audit: DecisionAuditEntry[] }>;
+  confidenceThreshold: number,
+): Promise<{ issues: ReviewIssue[]; audit: DecisionAuditEntry[] }>
 ```
 
 Reglas de la orquestación:
@@ -146,7 +146,7 @@ Reglas de la orquestación:
 
 ## 6. Mapeo Jev concreto
 
-Se sigue el patrón *parallel questions*: **una sola llamada** `systemOne` con una pregunta `Choice` por issue (se evalúan en paralelo; coste marginal bajo).
+Se sigue el patrón _parallel questions_: **una sola llamada** `systemOne` con una pregunta `Choice` por issue (se evalúan en paralelo; coste marginal bajo).
 
 Estado filtrado (evitar context rot; nada de diff completo):
 
@@ -159,23 +159,27 @@ Preguntas (IDs `issue_0..issue_N`, referenciando el estado con rutas entre backt
 ```ts
 questions = {
   issue_0: choice(
-    "Classify the severity of `issues[0]` for the change described by `spec`",
+    'Classify the severity of `issues[0]` for the change described by `spec`',
     {
       blocker: {
-        what: "breaks correctness, type-safety, accessibility or acceptance of `spec`",
-        not_for: "style, naming or refactor suggestions",
-        examples: ["uncovered branch in a test", "WCAG failure", "use of `any`"],
+        what: 'breaks correctness, type-safety, accessibility or acceptance of `spec`',
+        not_for: 'style, naming or refactor suggestions',
+        examples: [
+          'uncovered branch in a test',
+          'WCAG failure',
+          'use of `any`',
+        ],
       },
       warning: {
-        what: "improvement that does not block acceptance",
-        not_for: "bugs, a11y failures or type-safety holes",
-        examples: ["unclear name", "minor duplication"],
+        what: 'improvement that does not block acceptance',
+        not_for: 'bugs, a11y failures or type-safety holes',
+        examples: ['unclear name', 'minor duplication'],
       },
-    }
+    },
   ),
   issue_1: choice(/* ... */),
   // ...
-};
+}
 ```
 
 Lectura de la respuesta: `answer = answers[`issue_${i}`]` → `answer.choice` (`blocker`|`warning`) y `answer.confidence`. La salida está constreñida a las opciones ofrecidas; no se parsea texto libre.
@@ -210,12 +214,12 @@ decisionAudit: Annotation<DecisionAuditEntry[]>({
 
 ## 10. Configuración y credenciales
 
-| Variable | Valores | Default | Uso |
-| --- | --- | --- | --- |
-| `CROUPIER_DECISION_ENGINE` | `rule` \| `jev` | `rule` | Motor primario |
-| `CROUPIER_CONFIDENCE_THRESHOLD` | número | `0.8` | Umbral del gate |
-| `TYPESAFE_API_KEY` | string | — | Credencial por defecto del motor Jev |
-| `TYPESAFE_MODEL` | string | `jev-1.13` | Modelo Jev |
+| Variable                        | Valores         | Default    | Uso                                  |
+| ------------------------------- | --------------- | ---------- | ------------------------------------ |
+| `CROUPIER_DECISION_ENGINE`      | `rule` \| `jev` | `rule`     | Motor primario                       |
+| `CROUPIER_CONFIDENCE_THRESHOLD` | número          | `0.8`      | Umbral del gate                      |
+| `TYPESAFE_API_KEY`              | string          | —          | Credencial por defecto del motor Jev |
+| `TYPESAFE_MODEL`                | string          | `jev-1.13` | Modelo Jev                           |
 
 **Credenciales con precedencia conmutable.** El motor Jev no fija el proveedor: recibe `JevProviderConfig` (`baseUrl`, `apiKeyEnv`, `model`) y resuelve la credencial con esta precedencia:
 
@@ -233,8 +237,8 @@ Las claves nunca se escriben en `logs` ni en el estado. Solo se exige la credenc
 ```ts
 export interface SystemOneClient {
   systemOne(req: { state: unknown; questions: unknown }): Promise<{
-    answers: Record<string, { choice: string; confidence: number }>;
-  }>;
+    answers: Record<string, { choice: string; confidence: number }>
+  }>
 }
 ```
 

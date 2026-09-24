@@ -34,7 +34,7 @@ Se admite `{env:VAR}` y `{file:...}`. Reinicia opencode tras el cambio.
 Requiere un proveedor configurado y un repo con dev server para la parte visual.
 
 1. `/croupier` sobre una spec con slices: se planifica el slice y se crean tests en rojo.
-2. `scripts/verify.mjs` corre y devuelve JSON; con tests en verde, `passed` es `true`.
+2. La tool `croupier_verify` corre y devuelve JSON; con tests en verde, `passed` es `true`.
 3. Con un test roto, el orquestador reintenta hasta 3 veces y luego escala.
 4. Al cerrar el slice, se escribe `progress.md` y el flujo se detiene sin aprobación.
 5. Con baseline, se generan `before/`, `after/`, `diff` y `report.html`; sin baseline, solo el estado actual.

@@ -4,23 +4,43 @@
   "description": "opencode plugin: orchestrated slice-by-slice frontend workflow with specialist subagents",
   "type": "module",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/yabbadabbadev/croupier.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yabbadabbadev/croupier.git"
+  },
   "homepage": "https://github.com/yabbadabbadev/croupier",
-  "bugs": { "url": "https://github.com/yabbadabbadev/croupier/issues" },
+  "bugs": {
+    "url": "https://github.com/yabbadabbadev/croupier/issues"
+  },
   "main": "dist/plugin.js",
   "types": "dist/plugin.d.ts",
   "exports": {
-    ".": { "types": "./dist/plugin.d.ts", "import": "./dist/plugin.js" }
+    ".": {
+      "types": "./dist/plugin.d.ts",
+      "import": "./dist/plugin.js"
+    }
   },
-  "files": ["dist", "assets", "README.md", "CHANGELOG.md"],
-  "publishConfig": { "access": "public" },
-  "engines": { "node": ">=20.0.0" },
+  "files": [
+    "dist",
+    "assets",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
+    "lint": "oxlint --report-unused-disable-directives .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run build"
   },
   "dependencies": {
@@ -32,6 +52,8 @@
   "devDependencies": {
     "@types/node": "^22.13.9",
     "@types/pngjs": "^6.0.5",
+    "oxlint": "^1.85.0",
+    "prettier": "^3.9.9",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2",
     "vitest": "^3.0.7"

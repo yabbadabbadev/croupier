@@ -85,6 +85,7 @@ tests/                       # unit tests
 ## 7. Spike de validación (primera tarea del plan)
 
 Antes de construir el paquete completo: un plugin mínimo que
+
 1. inyecte **un** agente vía `config(cfg)`,
 2. registre **una** tool,
 3. añada **una** skill a `cfg.skills.paths`.

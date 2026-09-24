@@ -1,0 +1,44 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: daily
+      time: '21:00'
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      quality:
+        patterns:
+          - 'oxlint*'
+          - 'prettier'
+      build:
+        patterns:
+          - 'tsup'
+          - 'typescript'
+          - '@types/*'
+      testing:
+        patterns:
+          - 'vitest'
+      runtime:
+        patterns:
+          - '@opencode-ai/plugin'
+          - 'pixelmatch'
+          - 'pngjs'
+          - 'yaml'
+
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: daily
+      time: '21:00'
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      actions:
+        patterns:
+          - '*'

@@ -5,10 +5,10 @@ hidden: true
 temperature: 0.1
 permission:
   edit:
-    "*": deny
-    "**/*.spec.ts": allow
-    "**/*.test.ts": allow
-    "tests/**": allow
+    '*': deny
+    '**/*.spec.ts': allow
+    '**/*.test.ts': allow
+    'tests/**': allow
   bash: allow
 ---
 

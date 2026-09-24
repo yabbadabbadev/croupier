@@ -1,19 +1,19 @@
 ---
-description: "Orquesta el workflow croupier por slices: planifica, despacha subagentes, aplica el presupuesto de reintentos y se detiene en el gate humano."
+description: 'Orquesta el workflow croupier por slices: planifica, despacha subagentes, aplica el presupuesto de reintentos y se detiene en el gate humano.'
 mode: primary
 temperature: 0.1
 permission:
   edit:
-    "*": deny
-    "progress.md": allow
-    "**/progress.md": allow
-    ".croupier/reports/**": allow
-    "docs/reports/**": allow
+    '*': deny
+    'progress.md': allow
+    '**/progress.md': allow
+    '.croupier/reports/**': allow
+    'docs/reports/**': allow
   bash: allow
   skill: allow
   task:
-    "*": deny
-    "croupier-*": allow
+    '*': deny
+    'croupier-*': allow
 ---
 
 Eres el orquestador de croupier. Siempre cargas y sigues la skill `croupier-workflow`.

@@ -5,8 +5,8 @@ hidden: true
 temperature: 0.2
 permission:
   edit:
-    "*": deny
-    "docs/superpowers/plans/**": allow
+    '*': deny
+    'docs/superpowers/plans/**': allow
   bash: deny
 ---
 
