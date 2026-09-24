@@ -25,8 +25,8 @@ describe("skill croupier-workflow", () => {
   it("describe el flujo por slice y el gate humano", () => {
     expect(skillRaw).toMatch(/gate humano/i);
     expect(skillRaw).toContain("progress.md");
-    expect(skillRaw).toContain("scripts/verify.mjs");
-    expect(skillRaw).toContain("scripts/visual-diff.mjs");
+    expect(skillRaw).toContain("croupier_verify");
+    expect(skillRaw).toContain("croupier_visual_diff");
   });
 
   it("nombra a todos los subagentes del roster", () => {

@@ -25,11 +25,11 @@ Procedimiento del orquestador. Un slice a la vez, con verificación determinista
 3. **Bucle TDD** (presupuesto de reintentos = 3, configurable):
    - despacha `croupier-test-writer` (fase Red),
    - despacha `croupier-implementer` (fase Green),
-   - ejecuta `node scripts/verify.mjs` y parsea el JSON.
+   - ejecuta la tool `croupier_verify` y parsea el JSON.
    - Si `passed` es `false` y quedan reintentos → vuelve al implementer con `failedTestNames` y `output`; decrementa el presupuesto.
    - Si se agota el presupuesto → **escala al humano** y detente.
 4. **Review**: despacha `croupier-reviewer`. Si hay issues `blocker`, vuelven al bucle TDD con el mismo presupuesto.
-5. **Informe visual**: despacha `croupier-visual-reporter` para capturar `after/`, ejecutar `node scripts/visual-diff.mjs` y escribir `report.html`.
+5. **Informe visual**: despacha `croupier-visual-reporter` para capturar `after/`, ejecutar la tool `croupier_visual_diff` y escribir `report.html`.
 6. **Cerrar el slice**: escribe `progress.md`, resume el resultado y **detente en el gate humano**.
 7. **Gate humano**: no avanzas al siguiente slice sin aprobación explícita. Si el humano pide cambios, vuelve al bucle TDD.
 
