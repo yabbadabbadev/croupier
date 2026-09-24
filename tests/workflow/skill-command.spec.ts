@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
 
-const SKILL_PATH = ".opencode/skill/croupier-workflow/SKILL.md";
-const COMMAND_PATH = ".opencode/command/croupier.md";
+const SKILL_PATH = "assets/skills/croupier-workflow/SKILL.md";
+const COMMAND_PATH = "assets/commands/croupier.md";
 
 function frontmatter(raw: string): Record<string, any> {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);

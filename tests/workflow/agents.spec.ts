@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { parse } from "yaml";
 
-const AGENTS_DIR = ".opencode/agent";
+const AGENTS_DIR = "assets/agents";
 
 interface LoadedAgent {
   name: string;
