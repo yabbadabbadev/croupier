@@ -26,7 +26,6 @@ export interface ConfigContribution {
   mcp: Record<string, McpContribution>
 }
 
-import { join } from 'node:path'
 import { loadAgentDefinitions, loadCommand, skillsDir } from './assets.js'
 
 export interface BuildOptions {
