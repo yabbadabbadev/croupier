@@ -6,3 +6,10 @@ CHANGELOG.md
 # pnpm-lock.yaml is pnpm's own serialization; Prettier would reflow its flow
 # maps and pnpm then reports the lockfile as out of date.
 pnpm-lock.yaml
+
+# .superpowers/ is gitignored SDD scratch (task briefs, reports) held to no
+# format standard; dist/ and coverage/ are build artifacts. None should ever
+# fail the format gate.
+.superpowers/
+dist/
+coverage/
