@@ -6,8 +6,9 @@ development workflow driven by specialist subagents.
 Write a feature spec with a `## Slices` section, run `/croupier`, and an
 orchestrator agent plans one slice at a time, runs it through a deterministic
 verify loop (red tests → green implementation → `tsc` + `vitest`), reviews it,
-captures before/after visual evidence, and **stops at a human gate** before the
-next slice. It never advances without your approval.
+runs a performance check, captures before/after visual evidence, and **stops
+at a human gate** before the next slice. It never advances without your
+approval.
 
 The plugin injects everything the workflow needs into your opencode config —
 agents, the `/croupier` command, the `croupier-workflow` skill and a

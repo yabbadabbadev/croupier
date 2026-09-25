@@ -41,4 +41,5 @@ Requiere un proveedor configurado y un repo con dev server para la parte visual.
 4. Al cerrar el slice, se escribe `progress.md` y el flujo se detiene sin aprobación.
 5. Con baseline, se generan `before/`, `after/`, `diff` y `report.html`; sin baseline, solo el estado actual.
 6. Los `blocker` del reviewer devuelven al bucle TDD.
-7. Se despacha `croupier-performance`; sin budget solo emite warnings y no bloquea por caída de la app, y con budget declarado los `blocker` (LCP ≥ 2.5s / INP ≥ 200ms / CLS ≥ 0.1) vuelven al bucle TDD.
+7. Revisar la prosa de los 7 prompts: las cinco secciones (`Rol`, `Principios`, `Criterio`, `Checklist`, `Límites`), en español, y que cada práctica cite anti-patrón y porqué.
+8. Se despacha `croupier-performance`; sin budget solo emite warnings y no bloquea por caída de la app, y con budget declarado los `blocker` (LCP ≥ 2.5s / INP ≥ 200ms / CLS ≥ 0.1) vuelven al bucle TDD.
