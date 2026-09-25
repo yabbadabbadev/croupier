@@ -4,11 +4,12 @@ import { loadAgentDefinitions, loadCommand, skillsDir } from '../src/assets.js'
 const ASSETS = 'assets'
 
 describe('assets', () => {
-  it('carga los seis agentes con prompt no vacío', async () => {
+  it('carga los siete agentes con prompt no vacío', async () => {
     const agents = await loadAgentDefinitions(ASSETS)
     expect(agents.map((a) => a.name)).toEqual([
       'croupier-implementer',
       'croupier-orchestrator',
+      'croupier-performance',
       'croupier-planner',
       'croupier-reviewer',
       'croupier-test-writer',

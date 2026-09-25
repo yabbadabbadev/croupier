@@ -35,6 +35,7 @@ describe('definiciones de agente', () => {
     expect(names).toEqual([
       'croupier-implementer',
       'croupier-orchestrator',
+      'croupier-performance',
       'croupier-planner',
       'croupier-reviewer',
       'croupier-test-writer',
@@ -68,6 +69,7 @@ describe('definiciones de agente', () => {
       'croupier-test-writer',
       'croupier-implementer',
       'croupier-reviewer',
+      'croupier-performance',
       'croupier-visual-reporter',
     ]) {
       const agent = byName.get(name)!
@@ -79,6 +81,21 @@ describe('definiciones de agente', () => {
   it('el reviewer no puede editar', () => {
     const reviewer = byName.get('croupier-reviewer')!
     expect(reviewer.front.permission.edit).toBe('deny')
+  })
+
+  it('el performance es read-only y usa chrome-devtools', () => {
+    const perf = byName.get('croupier-performance')!
+    expect(perf.front.mode).toBe('subagent')
+    expect(perf.front.hidden).toBe(true)
+    expect(perf.front.model).toBeUndefined()
+    expect(perf.front.permission.edit).toBe('deny')
+    expect(perf.front.permission['chrome-devtools_*']).toBe('allow')
+    expect(perf.front.permission.bash).toMatchObject({
+      '*': 'deny',
+      'git diff*': 'allow',
+      'git log*': 'allow',
+      'git status*': 'allow',
+    })
   })
 
   it('el visual-reporter limita la edición a reportes', () => {
