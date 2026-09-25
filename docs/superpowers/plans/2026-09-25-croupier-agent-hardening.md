@@ -70,43 +70,43 @@ Bloque de principios que se copia (adaptado) en cada prompt:
 Añadir al final del `describe('definiciones de agente', ...)` de `tests/workflow/agents.spec.ts`:
 
 ```ts
-  it('el test-writer permite tests .ts/.tsx/.js/.jsx, tests/ y __tests__', () => {
-    const testWriter = byName.get('croupier-test-writer')!
-    expect(testWriter.front.permission.edit).toMatchObject({
-      '*': 'deny',
-      '**/*.test.ts': 'allow',
-      '**/*.test.tsx': 'allow',
-      '**/*.test.js': 'allow',
-      '**/*.test.jsx': 'allow',
-      '**/*.spec.ts': 'allow',
-      '**/*.spec.tsx': 'allow',
-      '**/*.spec.js': 'allow',
-      '**/*.spec.jsx': 'allow',
-      'tests/**': 'allow',
-      '**/__tests__/**': 'allow',
-    })
+it('el test-writer permite tests .ts/.tsx/.js/.jsx, tests/ y __tests__', () => {
+  const testWriter = byName.get('croupier-test-writer')!
+  expect(testWriter.front.permission.edit).toMatchObject({
+    '*': 'deny',
+    '**/*.test.ts': 'allow',
+    '**/*.test.tsx': 'allow',
+    '**/*.test.js': 'allow',
+    '**/*.test.jsx': 'allow',
+    '**/*.spec.ts': 'allow',
+    '**/*.spec.tsx': 'allow',
+    '**/*.spec.js': 'allow',
+    '**/*.spec.jsx': 'allow',
+    'tests/**': 'allow',
+    '**/__tests__/**': 'allow',
   })
+})
 
-  it('cada agente declara la estructura de contrato', () => {
-    const sections = [
-      '## Rol',
-      '## Principios',
-      '## Criterio',
-      '## Checklist',
-      '## Límites',
-    ]
-    for (const agent of agents) {
-      for (const section of sections) {
-        expect(agent.body).toContain(section)
-      }
+it('cada agente declara la estructura de contrato', () => {
+  const sections = [
+    '## Rol',
+    '## Principios',
+    '## Criterio',
+    '## Checklist',
+    '## Límites',
+  ]
+  for (const agent of agents) {
+    for (const section of sections) {
+      expect(agent.body).toContain(section)
     }
-  })
+  }
+})
 
-  it('cada prompt es sustancial (no una nota de una línea)', () => {
-    for (const agent of agents) {
-      expect(agent.body.trim().length).toBeGreaterThan(400)
-    }
-  })
+it('cada prompt es sustancial (no una nota de una línea)', () => {
+  for (const agent of agents) {
+    expect(agent.body.trim().length).toBeGreaterThan(400)
+  }
+})
 ```
 
 - [ ] **Step 2: Ejecutar y verificar que falla**
@@ -219,20 +219,20 @@ git commit -m "feat(agents): harden roster prompts with modern frontend practice
 En `tests/workflow/agents.spec.ts`, ampliar el roster esperado del test `define exactamente el roster esperado` con `'croupier-performance'` (orden alfabético, entre `croupier-orchestrator` y `croupier-planner`), añadir `'croupier-performance'` a la lista del test `todos los subagentes son subagent y hidden`, y agregar:
 
 ```ts
-  it('el performance es read-only y usa chrome-devtools', () => {
-    const perf = byName.get('croupier-performance')!
-    expect(perf.front.mode).toBe('subagent')
-    expect(perf.front.hidden).toBe(true)
-    expect(perf.front.model).toBeUndefined()
-    expect(perf.front.permission.edit).toBe('deny')
-    expect(perf.front.permission['chrome-devtools_*']).toBe('allow')
-    expect(perf.front.permission.bash).toMatchObject({
-      '*': 'deny',
-      'git diff*': 'allow',
-      'git log*': 'allow',
-      'git status*': 'allow',
-    })
+it('el performance es read-only y usa chrome-devtools', () => {
+  const perf = byName.get('croupier-performance')!
+  expect(perf.front.mode).toBe('subagent')
+  expect(perf.front.hidden).toBe(true)
+  expect(perf.front.model).toBeUndefined()
+  expect(perf.front.permission.edit).toBe('deny')
+  expect(perf.front.permission['chrome-devtools_*']).toBe('allow')
+  expect(perf.front.permission.bash).toMatchObject({
+    '*': 'deny',
+    'git diff*': 'allow',
+    'git log*': 'allow',
+    'git status*': 'allow',
   })
+})
 ```
 
 - [ ] **Step 2: Ejecutar y verificar que falla**
@@ -346,11 +346,11 @@ git commit -m "feat(agents): add read-only performance subagent"
 En `tests/workflow/skill-command.spec.ts`, añadir `'croupier-performance'` a la lista del test `nombra a todos los subagentes del roster` y agregar:
 
 ```ts
-  it('describe el paso de performance y el budget', () => {
-    expect(skillRaw).toContain('croupier-performance')
-    expect(skillRaw).toMatch(/performance/i)
-    expect(skillRaw).toMatch(/budget/i)
-  })
+it('describe el paso de performance y el budget', () => {
+  expect(skillRaw).toContain('croupier-performance')
+  expect(skillRaw).toMatch(/performance/i)
+  expect(skillRaw).toMatch(/budget/i)
+})
 ```
 
 - [ ] **Step 2: Ejecutar y verificar que falla**

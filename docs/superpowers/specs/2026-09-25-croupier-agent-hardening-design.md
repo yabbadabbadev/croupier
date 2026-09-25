@@ -19,7 +19,7 @@ Referencias de prácticas (leídas y destiladas, **no** dependencias de runtime)
 
 **Objetivo**
 
-- Reescribir los 6 prompts del roster para que cada uno sea un **contrato fuerte**: rol, principios, criterio de dominio (con el *porqué* y el anti-patrón), checklist accionable y límites.
+- Reescribir los 6 prompts del roster para que cada uno sea un **contrato fuerte**: rol, principios, criterio de dominio (con el _porqué_ y el anti-patrón), checklist accionable y límites.
 - Destilar las prácticas Vercel + la metodología **dentro de los propios `.md`**, sin skill nueva ni dependencia de skills externas.
 - Añadir `croupier-performance` como subagente: revisa anti-patrones en el diff y, si hay app, corre Lighthouse; `warning` por defecto, `blocker` solo con budget declarado.
 - Resolver el pendiente transversal A (globs del test-writer).
@@ -50,7 +50,7 @@ Cada `.md` (frontmatter + body) sigue esta estructura, escalada al rol:
 
 1. **Rol** — qué decide y qué no, en una frase.
 2. **Principios** — metodología común: TDD, Clean Code/YAGNI, commits atómicos (Conventional Commits), determinismo vs juicio.
-3. **Criterio de dominio** — reglas del rol con el *porqué* y el anti-patrón, no solo el nombre de la regla.
+3. **Criterio de dominio** — reglas del rol con el _porqué_ y el anti-patrón, no solo el nombre de la regla.
 4. **Checklist** — comprobaciones accionables antes de reportar.
 5. **Límites** — permisos, scope de escritura y cuándo escalar.
 
@@ -58,15 +58,15 @@ La base de metodología es breve y común; el criterio de dominio se asigna por 
 
 ### 4.2 Asignación de prácticas por agente
 
-| Agente | Prácticas y metodología que interioriza |
-| --- | --- |
-| `croupier-orchestrator` | Determinismo (invariantes vs juicio), presupuesto de reintentos, gate humano, política de reportes, encaje del paso de performance, no edita código, coordinación por `Task` |
-| `croupier-planner` | Plan TDD por tareas atómicas, `targetFiles`, rutas UI + modo de baseline, **budget de performance opcional**, anticipación de riesgos (perf, a11y, composición), commits atómicos |
-| `croupier-test-writer` | TDD estricto, testing-library, queries por rol/accesibilidad, `user-event`, comportamiento > implementación, no `testid` sin justificar; **globs ampliados (transversal A)** |
-| `croupier-implementer` | Clean Code/YAGNI, composición React (compound components, no boolean props, React 19 `use()`), waterfalls (`Promise.all`/Suspense), bundle (imports directos), memo solo con evidencia, a11y semántica, view transitions con `prefers-reduced-motion` |
-| `croupier-reviewer` | Diff vs spec, severidad `blocker`/`warning`, checklist de performance/composición/a11y, distinguir blocker real de ruido |
-| `croupier-performance` **(nuevo)** | Anti-patrones Vercel en el diff + Lighthouse/CWV si hay app; warning por defecto, blocker solo con budget; read-only |
-| `croupier-visual-reporter` | Evidencia visual, a11y y consola, CWV en el informe, view transitions capturadas, no bloquea la verificación de código |
+| Agente                             | Prácticas y metodología que interioriza                                                                                                                                                                                                               |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `croupier-orchestrator`            | Determinismo (invariantes vs juicio), presupuesto de reintentos, gate humano, política de reportes, encaje del paso de performance, no edita código, coordinación por `Task`                                                                          |
+| `croupier-planner`                 | Plan TDD por tareas atómicas, `targetFiles`, rutas UI + modo de baseline, **budget de performance opcional**, anticipación de riesgos (perf, a11y, composición), commits atómicos                                                                     |
+| `croupier-test-writer`             | TDD estricto, testing-library, queries por rol/accesibilidad, `user-event`, comportamiento > implementación, no `testid` sin justificar; **globs ampliados (transversal A)**                                                                          |
+| `croupier-implementer`             | Clean Code/YAGNI, composición React (compound components, no boolean props, React 19 `use()`), waterfalls (`Promise.all`/Suspense), bundle (imports directos), memo solo con evidencia, a11y semántica, view transitions con `prefers-reduced-motion` |
+| `croupier-reviewer`                | Diff vs spec, severidad `blocker`/`warning`, checklist de performance/composición/a11y, distinguir blocker real de ruido                                                                                                                              |
+| `croupier-performance` **(nuevo)** | Anti-patrones Vercel en el diff + Lighthouse/CWV si hay app; warning por defecto, blocker solo con budget; read-only                                                                                                                                  |
+| `croupier-visual-reporter`         | Evidencia visual, a11y y consola, CWV en el informe, view transitions capturadas, no bloquea la verificación de código                                                                                                                                |
 
 ### 4.3 Contrato de `croupier-performance`
 
