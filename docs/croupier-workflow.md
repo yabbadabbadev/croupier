@@ -2,6 +2,8 @@
 
 Workflow opencode-native por repositorio para implementar specs por slices con subagentes y verificación determinista.
 
+Flujo por slice: plan → baseline visual (si aplica) → bucle TDD (`croupier_verify`) → review → performance → informe visual → gate humano.
+
 ## Uso
 
 1. Reinicia opencode tras instalar/editar el workflow.
@@ -39,3 +41,4 @@ Requiere un proveedor configurado y un repo con dev server para la parte visual.
 4. Al cerrar el slice, se escribe `progress.md` y el flujo se detiene sin aprobación.
 5. Con baseline, se generan `before/`, `after/`, `diff` y `report.html`; sin baseline, solo el estado actual.
 6. Los `blocker` del reviewer devuelven al bucle TDD.
+7. Se despacha `croupier-performance`; sin budget solo emite warnings y no bloquea por caída de la app, y con budget declarado los `blocker` (LCP ≥ 2.5s / INP ≥ 200ms / CLS ≥ 0.1) vuelven al bucle TDD.

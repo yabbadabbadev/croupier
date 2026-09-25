@@ -35,10 +35,17 @@ describe('skill croupier-workflow', () => {
       'croupier-test-writer',
       'croupier-implementer',
       'croupier-reviewer',
+      'croupier-performance',
       'croupier-visual-reporter',
     ]) {
       expect(skillRaw).toContain(name)
     }
+  })
+
+  it('describe el paso de performance y el budget', () => {
+    expect(skillRaw).toContain('croupier-performance')
+    expect(skillRaw).toMatch(/performance/i)
+    expect(skillRaw).toMatch(/budget/i)
   })
 })
 

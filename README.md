@@ -64,7 +64,7 @@ on startup and there is no hot reload. On restart it registers:
 
 - agents `croupier-orchestrator` (primary) plus the hidden subagents
   `croupier-planner`, `croupier-test-writer`, `croupier-implementer`,
-  `croupier-reviewer` and `croupier-visual-reporter`;
+  `croupier-reviewer`, `croupier-performance` and `croupier-visual-reporter`;
 - the `/croupier` command and the `croupier-workflow` skill;
 - the tools `croupier_verify` and `croupier_visual_diff`;
 - a `chrome-devtools` MCP server (only if you don't define one yourself).
@@ -75,7 +75,10 @@ on startup and there is no hot reload. On restart it registers:
    `## Slices` section (see [Recipes](#recipe-a-two-slice-feature)).
 2. Run `/croupier` in opencode. The orchestrator picks the active slice (from
    `progress.md`) and follows the workflow: plan → red tests → green
-   implementation → `croupier_verify` gate → review → visual report.
+   implementation → `croupier_verify` gate → review → performance → visual
+   report. A performance gate is optional: it becomes blocking only when a
+   budget is declared, otherwise `croupier-performance` emits warnings and never
+   blocks on a down app.
 3. Review the slice result and answer at the gate to continue.
 
 ## Configuration
@@ -119,9 +122,11 @@ opencode config and the plugin leaves it untouched.
 
 ### Permissions
 
-Each subagent has a scoped permission set: `croupier-reviewer` is read-only,
-`croupier-test-writer` writes only test files, `croupier-planner` only plans,
-and `croupier-visual-reporter` only report directories. `croupier-implementer`
+Each subagent has a scoped permission set: `croupier-reviewer` and
+`croupier-performance` are read-only (the latter with `chrome-devtools_*` for
+Lighthouse), `croupier-test-writer` writes only test files, `croupier-planner`
+only plans, and `croupier-visual-reporter` only report directories.
+`croupier-implementer`
 is the exception: its write scope (`targetFiles`) is enforced by instruction,
 not by permission globs. You can override any of these in your own config.
 
