@@ -76,7 +76,7 @@ La base de metodología es breve y común; el criterio de dominio se asigna por 
 - Salida: findings devueltos al orquestador con forma `{severity, file, rule, reason}`, donde `severity ∈ {blocker, warning}`. Read-only: **no escribe artefactos**.
 - Gate:
   - `warning` por defecto para todo hallazgo.
-  - Con **budget declarado por el slice**, los umbrales LCP < 2.5s, INP < 200ms, CLS < 0.1 se vuelven `blocker`.
+  - Con **budget declarado por el slice**, superar los umbrales LCP ≥ 2.5s, INP ≥ 200ms o CLS ≥ 0.1 se vuelve `blocker`.
   - Los `blocker` entran al bucle TDD con el mismo presupuesto de reintentos; agotado, escala al humano.
 - Alcance doble (C):
   - **Código:** lee el diff y detecta anti-patrones Vercel (waterfalls, re-renders evitables, bundle, serialización).
