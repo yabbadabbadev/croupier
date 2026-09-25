@@ -97,4 +97,42 @@ describe('definiciones de agente', () => {
       expect(agent.body.trim().length).toBeGreaterThan(0)
     }
   })
+
+  it('el test-writer permite tests .ts/.tsx/.js/.jsx, tests/ y __tests__', () => {
+    const testWriter = byName.get('croupier-test-writer')!
+    expect(testWriter.front.permission.edit).toMatchObject({
+      '*': 'deny',
+      '**/*.test.ts': 'allow',
+      '**/*.test.tsx': 'allow',
+      '**/*.test.js': 'allow',
+      '**/*.test.jsx': 'allow',
+      '**/*.spec.ts': 'allow',
+      '**/*.spec.tsx': 'allow',
+      '**/*.spec.js': 'allow',
+      '**/*.spec.jsx': 'allow',
+      'tests/**': 'allow',
+      '**/__tests__/**': 'allow',
+    })
+  })
+
+  it('cada agente declara la estructura de contrato', () => {
+    const sections = [
+      '## Rol',
+      '## Principios',
+      '## Criterio',
+      '## Checklist',
+      '## Límites',
+    ]
+    for (const agent of agents) {
+      for (const section of sections) {
+        expect(agent.body).toContain(section)
+      }
+    }
+  })
+
+  it('cada prompt es sustancial (no una nota de una línea)', () => {
+    for (const agent of agents) {
+      expect(agent.body.trim().length).toBeGreaterThan(400)
+    }
+  })
 })
