@@ -15,6 +15,7 @@ describe('CroupierPlugin', () => {
     expect(Object.keys(cfg.agent).sort()).toEqual([
       'croupier-implementer',
       'croupier-orchestrator',
+      'croupier-performance',
       'croupier-planner',
       'croupier-reviewer',
       'croupier-test-writer',

@@ -27,11 +27,17 @@ plan → ejecución por subagentes.
       CLI-harness retirado se eliminó. Publicación preparada (release-please +
       OIDC) pero **aún sin publicar en npm**.
       Spec: `docs/superpowers/specs/2026-09-22-croupier-plugin-packaging-design.md`.
-- [ ] **2. Robustecer los agentes.** Leer las skills de Vercel
+- [x] **2. Robustecer los agentes.** Leer las skills de Vercel
       (`vercel-react-best-practices`, `vercel-composition-patterns`,
       `vercel-react-view-transitions`, `web-design-guidelines`) y reescribir el
       orquestador y los subagentes para frontend real y moderno, aplicando buenas
-      prácticas de la industria. Incluye el pendiente transversal A.
+      prácticas de la industria. Reescritos `croupier-orchestrator`,
+      `croupier-planner`, `croupier-test-writer`, `croupier-implementer`,
+      `croupier-reviewer`, `croupier-visual-reporter` y añadido el nuevo
+      subagente read-only `croupier-performance` (warnings por defecto;
+      `blocker` solo con budget declarado: LCP ≥ 2.5s / INP ≥ 200ms / CLS ≥ 0.1).
+      Integrado en la skill `croupier-workflow` y cubierto por tests. Incluye el
+      pendiente transversal A.
 - [ ] **3. Feature flags (XP).** Un subagente que detecte si un slice necesita
       feature flag, proponga proteger el cambio con una flag, y que pueda hablar
       con un MCP de un servicio de flags (p. ej. Unleash).
@@ -46,10 +52,10 @@ plan → ejecución por subagentes.
 
 ## Pendientes transversales
 
-- [ ] **A. test-writer: globs incompletos.** `assets/agents/croupier-test-writer.md`
-      permite `**/*.spec.ts`, `**/*.test.ts` y `tests/**`, pero **no**
-      `.tsx`/`.jsx`/`.js` ni `**/__tests__/**`. En frontend React lo habitual es
-      `Component.test.tsx`, que hoy quedaría denegado. Ampliar los globs.
+- [x] **A. test-writer: globs incompletos.** `assets/agents/croupier-test-writer.md`
+      ahora permite `.tsx`/`.jsx`/`.js` en `test`/`spec` y `**/__tests__/**`, así
+      que `Component.test.tsx` ya no queda denegado. Cubierto por los tests de
+      permisos del subsistema 2.
 - [ ] **B. `progress.md` por feature.** Hoy el ledger es un `progress.md` suelto en
       la raíz del proyecto; con varias features colisionaría. Moverlo a un path
       por feature (p. ej. `docs/superpowers/specs/<feature>.progress.md`) y

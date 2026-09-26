@@ -103,6 +103,7 @@ describe('buildConfigContribution', () => {
     expect(Object.keys(contribution.agents).sort()).toEqual([
       'croupier-implementer',
       'croupier-orchestrator',
+      'croupier-performance',
       'croupier-planner',
       'croupier-reviewer',
       'croupier-test-writer',
