@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0](https://github.com/yabbadabbadev/croupier/compare/v0.2.0...v0.3.0) (2026-09-26)
+
+
+### Features
+
+* **agents:** add read-only performance subagent ([d7a4a9b](https://github.com/yabbadabbadev/croupier/commit/d7a4a9b2e62f249f0ded81c8b53cae89c93fb935))
+* **agents:** harden roster prompts with modern frontend practices ([2844f7b](https://github.com/yabbadabbadev/croupier/commit/2844f7ba814ec7ab58a2fc65e22981f73051a807))
+* harden croupier agents and add performance subagent ([d00e60e](https://github.com/yabbadabbadev/croupier/commit/d00e60e83c524749b7d86bb224845966d5979c90))
+
 ## [0.2.0](https://github.com/yabbadabbadev/croupier/compare/v0.1.0...v0.2.0) (2026-09-25)
 
 
