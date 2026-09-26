@@ -9,6 +9,16 @@ updates:
     commit-message:
       prefix: build
       include: scope
+    ignore:
+      # TypeScript majors are held until tsup bundles rollup-plugin-dts
+      # >= 6.5.1; see https://github.com/yabbadabbadev/croupier/issues/9
+      - dependency-name: 'typescript'
+        update-types:
+          - 'version-update:semver-major'
+      # @types/node tracks the Node major in .nvmrc (24).
+      - dependency-name: '@types/node'
+        versions:
+          - '>=25'
     groups:
       quality:
         patterns:
@@ -22,6 +32,7 @@ updates:
       testing:
         patterns:
           - 'vitest'
+          - '@vitest/*'
       runtime:
         patterns:
           - '@opencode-ai/plugin'
