@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/yabbadabbadev/croupier/compare/v0.3.1...v0.3.2) (2026-09-27)
+
+
+### Bug Fixes
+
+* validate OIDC trusted publishing ([d63a05d](https://github.com/yabbadabbadev/croupier/commit/d63a05d94f8c6f1fb2e5b0a18c9f6a5aadf157d5))
+
 ## [0.3.1](https://github.com/yabbadabbadev/croupier/compare/v0.3.0...v0.3.1) (2026-09-27)
 
 
