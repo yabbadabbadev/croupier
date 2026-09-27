@@ -60,8 +60,10 @@ plan → ejecución por subagentes.
       la raíz del proyecto; con varias features colisionaría. Moverlo a un path
       por feature (p. ej. `docs/superpowers/specs/<feature>.progress.md`) y
       actualizar la skill `croupier-workflow`.
-- [ ] **ARCHITECTURE_SPEC.md obsoleto.** Sigue describiendo el CLI-harness
-      retirado. Reescribir o eliminar (está en el historial de git).
+- [x] **ARCHITECTURE_SPEC.md obsoleto.** Eliminado junto al resto de artefactos
+      del CLI-harness retirado: las specs/planes del port de Jev
+      (`2026-09-21-*`) y `croupier-starter.zip`. Todo queda en el historial de
+      git.
 - [ ] **Publicación npm.** Configurar en npmjs el _trusted publisher_ de
       `yabbadabbadev/croupier` (repo, workflow `release.yml`, environment
       `npm-publish`) y crear ese environment en GitHub con reviewer requerido.
