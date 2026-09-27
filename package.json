@@ -1,6 +1,6 @@
 {
   "name": "@yabbadabbadev/croupier",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "opencode plugin: orchestrated slice-by-slice frontend workflow with specialist subagents",
   "type": "module",
   "license": "MIT",
