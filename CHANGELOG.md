@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/yabbadabbadev/croupier/compare/v0.3.0...v0.3.1) (2026-09-27)
+
+
+### Bug Fixes
+
+* **ci:** adopt vitest 5 and unblock the pipeline ([a465f55](https://github.com/yabbadabbadev/croupier/commit/a465f5567de824c1554bc13e0287b016e1781210))
+* **ci:** adopt vitest 5 and unblock the pipeline ([3be8c8a](https://github.com/yabbadabbadev/croupier/commit/3be8c8a01bcb6e82b0e62c4a6f51b5de65a33d20))
+
 ## [0.3.0](https://github.com/yabbadabbadev/croupier/compare/v0.2.0...v0.3.0) (2026-09-26)
 
 
