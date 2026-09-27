@@ -24,8 +24,8 @@ plan → ejecución por subagentes.
       `@yabbadabbadev/croupier` es un plugin que inyecta el roster, el comando
       `/croupier`, la skill `croupier-workflow` y el MCP `chrome-devtools`, y
       registra las tools `croupier_verify` y `croupier_visual_diff`. El
-      CLI-harness retirado se eliminó. Publicación preparada (release-please +
-      OIDC) pero **aún sin publicar en npm**.
+      CLI-harness retirado se eliminó. **Publicado en npm** (v0.3.3) vía
+      release-please + trusted publishing (OIDC).
       Spec: `docs/superpowers/specs/2026-09-22-croupier-plugin-packaging-design.md`.
 - [x] **2. Robustecer los agentes.** Leer las skills de Vercel
       (`vercel-react-best-practices`, `vercel-composition-patterns`,
@@ -49,6 +49,17 @@ plan → ejecución por subagentes.
       cross-browser o proponga polyfills/shims. Investigar MDN
       (`@mdn/browser-compat-data`) vs caniuse (`caniuse-lite`); para CSS,
       `doiuse` (postcss). **Nada de eslint** (`eslint-plugin-compat` descartado).
+- [ ] **6. Actualización de plugins instalados.** opencode cachea el paquete npm
+      en `~/.cache/opencode/packages/<spec>/` y `Npm.add` hace **cortocircuito**
+      si `node_modules/<pkg>` ya existe: no re-resuelve `@latest` ni avisa de
+      versiones nuevas (el aviso de update solo existe para el binario de
+      opencode). Objetivo: que el usuario se entere de una release nueva y pueda
+      actualizar sin borrar la caché a mano. Investigar qué podemos aportar desde
+      el plugin (p. ej. un check de versión contra el registry al arrancar y un
+      aviso, o registrar un comando de update) y **documentar** el flujo fiable
+      actual: `opencode plugin @yabbadabbadev/croupier@<versión> --force` y
+      reiniciar. Validar también `engines.opencode` para dar error explícito en
+      incompatibilidades.
 
 ## Pendientes transversales
 
@@ -64,11 +75,10 @@ plan → ejecución por subagentes.
       del CLI-harness retirado: las specs/planes del port de Jev
       (`2026-09-21-*`) y `croupier-starter.zip`. Todo queda en el historial de
       git.
-- [ ] **Publicación npm.** Configurar en npmjs el _trusted publisher_ de
-      `yabbadabbadev/croupier` (repo, workflow `release.yml`, environment
-      `npm-publish`) y crear ese environment en GitHub con reviewer requerido.
-      Mientras no se publique, la instalación es por **ruta local** al
-      `dist/plugin.js` (ver README).
+- [x] **Publicación npm.** _Trusted publisher_ de `yabbadabbadev/croupier`
+      configurado en npmjs (repo, workflow `release.yml`, environment
+      `npm-publish`) con ese environment en GitHub. La instalación es desde el
+      registry: `opencode plugin @yabbadabbadev/croupier` (ver README).
 
 ## Convenciones del proyecto
 
@@ -86,7 +96,7 @@ plan → ejecución por subagentes.
 Una sesión fresca puede arrancar sin contexto previo:
 
 1. Leer este `ROADMAP.md` y las specs en `docs/superpowers/specs/`.
-2. Empezar por el **subsistema 2** con la skill de brainstorming.
+2. Empezar por el **subsistema 3** con la skill de brainstorming.
 3. Recordar las convenciones de arriba y los pendientes transversales.
 
 Specs y planes relevantes:
