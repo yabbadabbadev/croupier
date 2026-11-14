@@ -1,5 +1,5 @@
 import { loadAgentDefinitions, loadCommand, loadSkill } from './assets.js'
-import { makeCommandExecute, type CommandExecute } from './command.js'
+import { makeCommandExecute, type CommandExecute, type SessionClient } from './command.js'
 
 export interface PermissionRule {
   action: string
@@ -107,13 +107,15 @@ export interface RegisterContext {
   }
   skill: { transform(cb: (editor: SkillEditorLike) => void): Promise<unknown> }
   mcp: { transform(cb: (editor: McpEditorLike) => void): Promise<unknown> }
+  session: SessionClient
 }
 
 /**
  * Registra el contribution en la API V2. Los overrides del usuario ganan por el
  * layering de config de OpenCode (la config se aplica después de los transforms),
- * así que aquí se setean los defaults incondicionalmente salvo el MCP, que solo se
- * define si el usuario no tiene ya un servidor con ese nombre.
+ * así que aquí se setean los defaults incondicionalmente. El MCP usa `set` solo si el
+ * nombre no está ya registrado por otro plugin (la config del usuario no es visible
+ * en `setup`; si la define, gana igualmente por layering).
  */
 export async function registerContribution(
   ctx: RegisterContext,
@@ -135,7 +137,7 @@ export async function registerContribution(
       editor.add({
         name: 'croupier',
         description: command.description,
-        execute: makeCommandExecute(command),
+        execute: makeCommandExecute(command, ctx.session),
       })
     })
   }

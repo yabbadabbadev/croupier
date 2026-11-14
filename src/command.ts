@@ -2,25 +2,23 @@ import type { CommandContribution } from './config-contribution.js'
 
 export interface CommandInvocation {
   sessionID: string
-  prompt: { text: string }
+  prompt: { text: string } & Record<string, unknown>
   delivery: 'steer' | 'queue'
 }
 
-export interface CommandRuntime {
-  session: {
-    switchAgent(input: { sessionID: string; agent: string }): Promise<void>
-    prompt(input: {
+/** Subconjunto del cliente de sesión que usa el comando. */
+export interface SessionClient {
+  switchAgent(input: { sessionID: string; agent: string }): Promise<void>
+  prompt(
+    input: Record<string, unknown> & {
       sessionID: string
       text: string
       delivery: 'steer' | 'queue'
-    }): Promise<void>
-  }
+    },
+  ): Promise<void>
 }
 
-export type CommandExecute = (
-  invocation: CommandInvocation,
-  ctx: CommandRuntime,
-) => Promise<void>
+export type CommandExecute = (invocation: CommandInvocation) => Promise<void>
 
 /**
  * Expande un template de comando (mismo contrato que los comandos markdown de OpenCode):
@@ -39,19 +37,22 @@ export function expandTemplate(template: string, args: string): string {
 }
 
 /**
- * En OpenCode 2 los comandos de plugin son programáticos (`execute`), no plantillas.
- * Reproduce el `assets/commands/croupier.md` seleccionando su agente y enviando el
- * template expandido como prompt.
+ * En OpenCode 2 los comandos de plugin son programáticos: `execute` recibe un ÚNICO
+ * argumento (la invocación); el cliente de sesión se captura aquí desde `setup`. Reproduce
+ * el `assets/commands/croupier.md` seleccionando su agente y enviando el prompt expandido,
+ * conservando el resto de campos del prompt (adjuntos, skills, etc.).
  */
 export function makeCommandExecute(
   command: CommandContribution,
+  session: SessionClient,
 ): CommandExecute {
-  return async (invocation, ctx) => {
-    await ctx.session.switchAgent({
+  return async (invocation) => {
+    await session.switchAgent({
       sessionID: invocation.sessionID,
       agent: command.agent,
     })
-    await ctx.session.prompt({
+    await session.prompt({
+      ...invocation.prompt,
       sessionID: invocation.sessionID,
       text: expandTemplate(command.template, invocation.prompt.text),
       delivery: invocation.delivery,

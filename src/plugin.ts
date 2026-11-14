@@ -10,6 +10,10 @@ import { makeVisualDiffTool } from './tools/visual-diff.js'
 
 const assetsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets')
 
+// `as never`: los tipos internos son subconjuntos estructurales de la API V2, pero no
+// nominalmente idénticos (IDs branded como `Skill.ID`, `ValueSchema` genérico). El
+// contrato se mantiene aquí en la frontera para no filtrar los tipos del framework a la
+// lógica pura (que es la que se testea).
 export default Plugin.define({
   id: 'croupier',
   async setup(ctx) {

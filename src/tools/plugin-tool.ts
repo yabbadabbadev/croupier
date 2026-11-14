@@ -3,6 +3,7 @@ export interface JsonSchemaObject {
   properties: Record<string, unknown>
   required?: string[]
   additionalProperties?: boolean
+  [key: string]: unknown
 }
 
 /**
