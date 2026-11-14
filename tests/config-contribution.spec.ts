@@ -1,123 +1,116 @@
 import { describe, it, expect } from 'vitest'
-import {
-  applyConfigContribution,
-  buildConfigContribution,
-} from '../src/config-contribution.js'
+import { registerContribution } from '../src/config-contribution.js'
+import type { ConfigContribution } from '../src/config-contribution.js'
 
-describe('applyConfigContribution', () => {
-  it('inyecta agentes, comando, skills y mcp en una config vacía', () => {
-    const cfg: Record<string, any> = {}
-    applyConfigContribution(cfg, {
-      agents: {
-        'croupier-orchestrator': {
-          description: 'orquesta',
-          mode: 'primary',
-          prompt: 'eres el orquestador',
-          permission: { edit: 'deny' },
-        },
+function contributionFixture(): ConfigContribution {
+  return {
+    agents: {
+      'croupier-orchestrator': {
+        description: 'orquesta',
+        mode: 'primary',
+        system: 'eres el orquestador',
+        permissions: [{ action: 'edit', resource: '*', effect: 'deny' }],
       },
-      command: {
-        description: 'cmd',
-        agent: 'croupier-orchestrator',
-        template: '$ARGUMENTS',
+      'croupier-implementer': {
+        description: 'implementa',
+        mode: 'subagent',
+        hidden: true,
+        system: 'eres el implementador',
       },
-      skillsPaths: ['/pkg/assets/skills'],
-      mcp: {
-        'chrome-devtools': {
-          type: 'local',
-          command: ['npx', '-y', 'chrome-devtools-mcp@latest', '--headless'],
-          enabled: true,
-        },
-      },
-    })
-
-    expect(cfg.agent['croupier-orchestrator']).toMatchObject({
-      mode: 'primary',
-      prompt: 'eres el orquestador',
-    })
-    expect(cfg.command.croupier).toMatchObject({
+    },
+    command: {
+      description: 'cmd',
       agent: 'croupier-orchestrator',
-    })
-    expect(cfg.skills.paths).toEqual(['/pkg/assets/skills'])
-    expect(cfg.mcp['chrome-devtools']).toMatchObject({
-      type: 'local',
-      enabled: true,
-    })
-  })
-
-  it('no pisa overrides del usuario en un agente', () => {
-    const cfg: Record<string, any> = {
-      agent: { 'croupier-implementer': { model: 'openrouter/x' } },
-    }
-    applyConfigContribution(cfg, {
-      agents: {
-        'croupier-implementer': {
-          description: 'implementa',
-          mode: 'subagent',
-          hidden: true,
-          prompt: 'eres el implementador',
-        },
+      template: 'Ejecuta $ARGUMENTS',
+    },
+    skill: {
+      id: 'croupier-workflow',
+      name: 'Croupier Workflow',
+      description: 'wf',
+      path: '/pkg/assets/skills/croupier-workflow/SKILL.md',
+      content: 'contenido',
+    },
+    mcp: {
+      'chrome-devtools': {
+        type: 'local',
+        command: ['npx', '-y', 'chrome-devtools-mcp@latest'],
       },
-      skillsPaths: [],
-      mcp: {},
-    })
+    },
+  }
+}
 
-    expect(cfg.agent['croupier-implementer'].model).toBe('openrouter/x')
-    expect(cfg.agent['croupier-implementer'].prompt).toBe(
-      'eres el implementador',
-    )
+function fakeCtx(existingMcp = false) {
+  const calls: string[] = []
+  const ctx = {
+    agent: {
+      transform: async (cb: any) => {
+        cb({
+          update: (id: string, fn: (a: any) => void) => {
+            const agent: any = {}
+            fn(agent)
+            calls.push(`agent:${id}:${agent.system ?? ''}`)
+          },
+        })
+      },
+    },
+    command: {
+      transform: async (cb: any) =>
+        cb({ add: (d: any) => calls.push(`command:${d.name}`) }),
+    },
+    skill: {
+      transform: async (cb: any) =>
+        cb({ add: (s: any) => calls.push(`skill:${s.id}`) }),
+    },
+    mcp: {
+      transform: async (cb: any) =>
+        cb({
+          get: () =>
+            existingMcp ? { type: 'local', command: ['x'] } : undefined,
+          set: (n: string) => calls.push(`mcp:${n}`),
+        }),
+    },
+  }
+  return { ctx, calls }
+}
+
+describe('registerContribution', () => {
+  it('registra agentes, comando, skill y mcp con transforms de dominio', async () => {
+    const { ctx, calls } = fakeCtx()
+    await registerContribution(ctx as never, contributionFixture())
+    expect(calls).toContain('agent:croupier-orchestrator:eres el orquestador')
+    expect(calls).toContain('agent:croupier-implementer:eres el implementador')
+    expect(calls).toContain('command:croupier')
+    expect(calls).toContain('skill:croupier-workflow')
+    expect(calls).toContain('mcp:chrome-devtools')
   })
 
-  it('no duplica el skills path ni el mcp existente', () => {
-    const cfg: Record<string, any> = {
-      skills: { paths: ['/pkg/assets/skills'] },
+  it('no define el mcp chrome-devtools si el usuario ya lo tiene', async () => {
+    const { ctx, calls } = fakeCtx(true)
+    await registerContribution(ctx as never, contributionFixture())
+    expect(calls.filter((c) => c.startsWith('mcp:'))).toEqual([])
+  })
+
+  it('no escribe claves undefined (hidden) en el agente', async () => {
+    const agents: Record<string, unknown>[] = []
+    const ctx = {
+      agent: {
+        transform: async (cb: any) =>
+          cb({
+            update: (_id: string, fn: (a: any) => void) => {
+              const a: any = { hidden: false }
+              fn(a)
+              agents.push(a)
+            },
+          }),
+      },
+      command: { transform: async (cb: any) => cb({ add: () => {} }) },
+      skill: { transform: async (cb: any) => cb({ add: () => {} }) },
       mcp: {
-        'chrome-devtools': {
-          type: 'local',
-          command: ['custom'],
-          enabled: false,
-        },
+        transform: async (cb: any) =>
+          cb({ get: () => undefined, set: () => {} }),
       },
     }
-    applyConfigContribution(cfg, {
-      agents: {},
-      skillsPaths: ['/pkg/assets/skills'],
-      mcp: {
-        'chrome-devtools': {
-          type: 'local',
-          command: ['npx', '-y', 'chrome-devtools-mcp@latest'],
-          enabled: true,
-        },
-      },
-    })
-
-    expect(cfg.skills.paths).toEqual(['/pkg/assets/skills'])
-    expect(cfg.mcp['chrome-devtools'].command).toEqual(['custom'])
-    expect(cfg.mcp['chrome-devtools'].enabled).toBe(false)
-  })
-})
-
-describe('buildConfigContribution', () => {
-  it('construye la contribución desde assets', async () => {
-    const contribution = await buildConfigContribution('assets')
-    expect(Object.keys(contribution.agents).sort()).toEqual([
-      'croupier-implementer',
-      'croupier-orchestrator',
-      'croupier-performance',
-      'croupier-planner',
-      'croupier-reviewer',
-      'croupier-test-writer',
-      'croupier-visual-reporter',
-    ])
-    expect(contribution.command?.agent).toBe('croupier-orchestrator')
-    expect(contribution.skillsPaths[0]).toMatch(/assets\/skills$/)
-    expect(contribution.mcp['chrome-devtools'].command.join(' ')).toContain(
-      '--headless',
-    )
-  })
-
-  it('respeta el mcp opcional desactivado', async () => {
-    const contribution = await buildConfigContribution('assets', { mcp: false })
-    expect(contribution.mcp).toEqual({})
+    await registerContribution(ctx as never, contributionFixture())
+    for (const a of agents) expect(typeof a.hidden).toBe('boolean')
   })
 })
