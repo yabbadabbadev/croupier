@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { tool, type ToolDefinition } from '@opencode-ai/plugin'
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
+import type { PluginTool } from './plugin-tool.js'
 
 export interface DiffResult {
   diffPixels: number
@@ -36,36 +36,60 @@ export function diffPngs(
   }
 }
 
-export const visualDiffTool: ToolDefinition = tool({
-  description:
-    'Compara dos PNG (before/after) y devuelve el ratio de píxeles distintos; opcionalmente escribe la imagen de diff.',
-  args: {
-    before: tool.schema
-      .string()
-      .describe('Ruta del PNG before, relativa al proyecto'),
-    after: tool.schema
-      .string()
-      .describe('Ruta del PNG after, relativa al proyecto'),
-    diff: tool.schema
-      .string()
-      .optional()
-      .describe('Ruta donde escribir la imagen de diff'),
-  },
-  async execute(args, context) {
-    const before = resolve(context.directory, args.before)
-    const after = resolve(context.directory, args.after)
-    const result = diffPngs(readFileSync(before), readFileSync(after))
-    if (args.diff)
-      writeFileSync(resolve(context.directory, args.diff), result.diffPng)
-    return JSON.stringify(
-      {
-        ratio: result.ratio,
-        diffPixels: result.diffPixels,
-        totalPixels: result.totalPixels,
-        diffPath: args.diff ?? null,
+interface VisualDiffInput {
+  before: string
+  after: string
+  diff?: string
+}
+
+/**
+ * Construye la tool `croupier_visual_diff` para un directorio de proyecto dado.
+ * Las rutas se resuelven contra el directorio capturado desde `ctx.location.directory`.
+ */
+export function makeVisualDiffTool(
+  directory: string,
+): PluginTool<VisualDiffInput> {
+  return {
+    name: 'croupier_visual_diff',
+    description:
+      'Compara dos PNG (before/after) y devuelve el ratio de píxeles distintos; opcionalmente escribe la imagen de diff.',
+    input: {
+      type: 'object',
+      properties: {
+        before: {
+          type: 'string',
+          description: 'Ruta del PNG before, relativa al proyecto',
+        },
+        after: {
+          type: 'string',
+          description: 'Ruta del PNG after, relativa al proyecto',
+        },
+        diff: {
+          type: 'string',
+          description: 'Ruta donde escribir la imagen de diff',
+        },
       },
-      null,
-      2,
-    )
-  },
-})
+      required: ['before', 'after'],
+      additionalProperties: false,
+    },
+    async execute(args) {
+      const before = resolve(directory, args.before)
+      const after = resolve(directory, args.after)
+      const result = diffPngs(readFileSync(before), readFileSync(after))
+      if (args.diff)
+        writeFileSync(resolve(directory, args.diff), result.diffPng)
+      return {
+        content: JSON.stringify(
+          {
+            ratio: result.ratio,
+            diffPixels: result.diffPixels,
+            totalPixels: result.totalPixels,
+            diffPath: args.diff ?? null,
+          },
+          null,
+          2,
+        ),
+      }
+    },
+  }
+}

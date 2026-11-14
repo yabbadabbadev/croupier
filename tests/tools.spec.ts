@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { PNG } from 'pngjs'
-import { summarizeVerification } from '../src/tools/verify.js'
-import { diffPngs } from '../src/tools/visual-diff.js'
+import { summarizeVerification, makeVerifyTool } from '../src/tools/verify.js'
+import { diffPngs, makeVisualDiffTool } from '../src/tools/visual-diff.js'
 
 function solidPng(rgb: [number, number, number]): Buffer {
   const png = new PNG({ width: 4, height: 4 })
@@ -58,5 +58,20 @@ describe('diffPngs', () => {
     const small = solidPng([0, 0, 0])
     const big = PNG.sync.write(new PNG({ width: 8, height: 4 }))
     expect(() => diffPngs(small, big)).toThrow('dimensions')
+  })
+})
+
+describe('tool factories (V2)', () => {
+  it('makeVerifyTool devuelve name y execute', () => {
+    const t = makeVerifyTool('/proj')
+    expect(t.name).toBe('croupier_verify')
+    expect(typeof t.execute).toBe('function')
+    expect(t.input.type).toBe('object')
+  })
+
+  it('makeVisualDiffTool exige before y after', () => {
+    const t = makeVisualDiffTool('/proj')
+    expect(t.name).toBe('croupier_visual_diff')
+    expect(t.input.required).toEqual(['before', 'after'])
   })
 })

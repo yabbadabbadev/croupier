@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { tool } from '@opencode-ai/plugin'
+import type { PluginTool } from './plugin-tool.js'
 
 export interface VerificationResult {
   passed: boolean
@@ -52,43 +52,51 @@ export function summarizeVerification(
   }
 }
 
-export const verifyTool = tool({
-  description:
-    'Ejecuta tsc --noEmit y vitest en el proyecto y devuelve un JSON con el resultado de la verificación.',
-  args: {},
-  async execute(_args, context) {
-    const cwd = context.directory
-    const typeCheck = spawnSync('pnpm', ['exec', 'tsc', '--noEmit'], {
-      cwd,
-      encoding: 'utf8',
-    })
-    const reportPath = join(cwd, '.croupier', 'vitest.json')
-    const tests = spawnSync(
-      'pnpm',
-      [
-        'exec',
-        'vitest',
-        'run',
-        '--reporter=json',
-        `--outputFile=${reportPath}`,
-      ],
-      { cwd, encoding: 'utf8' },
-    )
-    let testReport: SummarizeInput['testReport'] = null
-    try {
-      testReport = JSON.parse(readFileSync(reportPath, 'utf8'))
-    } catch {
-      testReport = null
-    }
-    const result = summarizeVerification({
-      typeCheckExitCode: typeCheck.status ?? 1,
-      typeCheckOutput: [typeCheck.stdout, typeCheck.stderr]
-        .filter(Boolean)
-        .join('\n'),
-      testExitCode: tests.status ?? 1,
-      testReport,
-      testOutput: [tests.stdout, tests.stderr].filter(Boolean).join('\n'),
-    })
-    return JSON.stringify(result, null, 2)
-  },
-})
+/**
+ * Construye la tool `croupier_verify` para un directorio de proyecto dado.
+ * En OpenCode 2 las tools de plugin reciben el directorio desde `ctx.location.directory`,
+ * así que se captura aquí en lugar de leerlo del contexto de ejecución (V1).
+ */
+export function makeVerifyTool(directory: string): PluginTool {
+  return {
+    name: 'croupier_verify',
+    description:
+      'Ejecuta tsc --noEmit y vitest en el proyecto y devuelve un JSON con el resultado de la verificación.',
+    input: { type: 'object', properties: {}, additionalProperties: false },
+    async execute() {
+      const cwd = directory
+      const typeCheck = spawnSync('pnpm', ['exec', 'tsc', '--noEmit'], {
+        cwd,
+        encoding: 'utf8',
+      })
+      const reportPath = join(cwd, '.croupier', 'vitest.json')
+      const tests = spawnSync(
+        'pnpm',
+        [
+          'exec',
+          'vitest',
+          'run',
+          '--reporter=json',
+          `--outputFile=${reportPath}`,
+        ],
+        { cwd, encoding: 'utf8' },
+      )
+      let testReport: SummarizeInput['testReport'] = null
+      try {
+        testReport = JSON.parse(readFileSync(reportPath, 'utf8'))
+      } catch {
+        testReport = null
+      }
+      const result = summarizeVerification({
+        typeCheckExitCode: typeCheck.status ?? 1,
+        typeCheckOutput: [typeCheck.stdout, typeCheck.stderr]
+          .filter(Boolean)
+          .join('\n'),
+        testExitCode: tests.status ?? 1,
+        testReport,
+        testOutput: [tests.stdout, tests.stderr].filter(Boolean).join('\n'),
+      })
+      return { content: JSON.stringify(result, null, 2) }
+    },
+  }
+}
