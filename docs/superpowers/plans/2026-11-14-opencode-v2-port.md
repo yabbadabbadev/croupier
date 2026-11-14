@@ -36,11 +36,13 @@
 ### Task 1: Migrar las tools a V2 (`croupier_verify`, `croupier_visual_diff`)
 
 **Files:**
+
 - Modify: `package.json` (añadir `@opencode/plugin` junto a `@opencode-ai/plugin`, que se elimina en Task 5)
 - Modify: `src/tools/verify.ts`, `src/tools/visual-diff.ts`
 - Modify: `tests/tools.spec.ts`
 
 **Interfaces:**
+
 - Produces: `verifyTool: Tool.Info` (name `croupier_verify`) y `visualDiffTool: Tool.Info` (name `croupier_visual_diff`), listos para `ctx.tool.transform(e => e.add(tool))`. `execute(input, context) => Promise<{ content: string }>`; el dir del proyecto se captura como parámetro en la factory `makeVerifyTool(directory: string)`.
 
 - [ ] **Step 1 (RED): test de la factory**
@@ -70,10 +72,12 @@ describe('makeVerifyTool', () => {
 ### Task 2: `assets.ts` → shapes V2 (agentes y comando)
 
 **Files:**
+
 - Modify: `src/assets.ts`, `src/config-contribution.ts` (tipos)
 - Modify: `tests/assets.spec.ts`
 
 **Interfaces:**
+
 - Produces: `LoadedAgent { name: string; config: AgentDefaults }` con `AgentDefaults = { description?: string; mode?: 'primary'|'subagent'|'all'; hidden?: boolean; system: string; permissions?: PermissionRule[] }`. `PermissionRule = { action: string; resource: string; effect: 'allow'|'deny'|'ask' }`. `loadCommand` devuelve `{ description: string; agent: string; template: string }`.
 
 - [ ] **Step 1 (RED): test del mapeo**
@@ -101,10 +105,12 @@ it('mapea frontmatter al shape V2 del agente', async () => {
 ### Task 3: `registerContribution(ctx, contribution)` con transforms de dominio
 
 **Files:**
+
 - Modify: `src/config-contribution.ts`
 - Modify: `tests/config-contribution.spec.ts`
 
 **Interfaces:**
+
 - Produces: `registerContribution(ctx: Pick<PluginContext,'agent'|'command'|'skill'|'mcp'>, contribution: ConfigContribution): Promise<void>`. Elimina `applyConfigContribution`.
 - Consumes: `ConfigContribution` de Task 2 (`agents`, `command?`, `skillsPaths`, `mcp`).
 
@@ -115,20 +121,43 @@ it('mapea frontmatter al shape V2 del agente', async () => {
 it('registra agentes, comando, skill y mcp con transforms', async () => {
   const calls: string[] = []
   const ctx = {
-    agent: { transform: async (cb: any) => cb({ update: (id: string) => calls.push(`agent:${id}`) }) },
-    command: { transform: async (cb: any) => cb({ add: (d: any) => calls.push(`command:${d.name}`) }) },
-    skill: { transform: async (cb: any) => cb({ add: (s: any) => calls.push(`skill:${s.id}`) }) },
-    mcp: { transform: async (cb: any) => cb({ get: () => undefined, set: (n: string) => calls.push(`mcp:${n}`) }) },
+    agent: {
+      transform: async (cb: any) =>
+        cb({ update: (id: string) => calls.push(`agent:${id}`) }),
+    },
+    command: {
+      transform: async (cb: any) =>
+        cb({ add: (d: any) => calls.push(`command:${d.name}`) }),
+    },
+    skill: {
+      transform: async (cb: any) =>
+        cb({ add: (s: any) => calls.push(`skill:${s.id}`) }),
+    },
+    mcp: {
+      transform: async (cb: any) =>
+        cb({
+          get: () => undefined,
+          set: (n: string) => calls.push(`mcp:${n}`),
+        }),
+    },
   }
   await registerContribution(ctx as never, contributionFixture())
   expect(calls.sort()).toEqual([
-    'agent:croupier-implementer', 'agent:croupier-orchestrator', 'agent:croupier-performance',
-    'agent:croupier-planner', 'agent:croupier-reviewer', 'agent:croupier-test-writer',
-    'agent:croupier-visual-reporter', 'command:croupier', 'mcp:chrome-devtools',
+    'agent:croupier-implementer',
+    'agent:croupier-orchestrator',
+    'agent:croupier-performance',
+    'agent:croupier-planner',
+    'agent:croupier-reviewer',
+    'agent:croupier-test-writer',
+    'agent:croupier-visual-reporter',
+    'command:croupier',
+    'mcp:chrome-devtools',
     'skill:croupier-workflow',
   ])
 })
-it('no define el mcp chrome-devtools si el usuario ya lo tiene', async () => { /* get → {…} ⇒ no set */ })
+it('no define el mcp chrome-devtools si el usuario ya lo tiene', async () => {
+  /* get → {…} ⇒ no set */
+})
 ```
 
 - [ ] **Step 2:** correr → FAIL.
@@ -141,10 +170,12 @@ it('no define el mcp chrome-devtools si el usuario ya lo tiene', async () => { /
 ### Task 4: Comando `/croupier` como `execute` (template + agente)
 
 **Files:**
+
 - Modify: `src/config-contribution.ts` (o nuevo `src/command.ts`)
 - Modify: `tests/workflow/skill-command.spec.ts`
 
 **Interfaces:**
+
 - Produces: `makeCommandExecute(command: CommandContribution): (inv: CommandInvocation, ctx) => Promise<void>` que hace `ctx.session.switchAgent({ sessionID, agent: command.agent })` y `ctx.session.prompt({ sessionID, text: expandTemplate(command.template, text), delivery })`.
 
 - [ ] **Step 1 (RED): test de expansión + agente**
@@ -152,12 +183,25 @@ it('no define el mcp chrome-devtools si el usuario ya lo tiene', async () => { /
 ```ts
 it('expande $ARGUMENTS y selecciona el agente del comando', async () => {
   const seen: any = {}
-  const ctx = { session: {
-    switchAgent: async (i: any) => { seen.agent = i.agent },
-    prompt: async (i: any) => { seen.text = i.text },
-  } }
-  const exec = makeCommandExecute({ description: 'd', agent: 'croupier-orchestrator', template: 'Ejecuta: $ARGUMENTS' })
-  await exec({ sessionID: 's', prompt: { text: 'slice 1' }, delivery: 'steer' }, ctx as never)
+  const ctx = {
+    session: {
+      switchAgent: async (i: any) => {
+        seen.agent = i.agent
+      },
+      prompt: async (i: any) => {
+        seen.text = i.text
+      },
+    },
+  }
+  const exec = makeCommandExecute({
+    description: 'd',
+    agent: 'croupier-orchestrator',
+    template: 'Ejecuta: $ARGUMENTS',
+  })
+  await exec(
+    { sessionID: 's', prompt: { text: 'slice 1' }, delivery: 'steer' },
+    ctx as never,
+  )
   expect(seen.agent).toBe('croupier-orchestrator')
   expect(seen.text).toBe('Ejecuta: slice 1')
 })
@@ -173,10 +217,12 @@ it('expande $ARGUMENTS y selecciona el agente del comando', async () => {
 ### Task 5: Entrypoint V2 + wiring + quitar la dependencia V1 + docs
 
 **Files:**
+
 - Modify: `src/plugin.ts`, `package.json` (quitar `@opencode-ai/plugin`), `README.md`
 - Modify: `tests/plugin.spec.ts`, `tests/workflow/project-config.spec.ts`
 
 **Interfaces:**
+
 - Produces: `export default Plugin.define({ id: 'croupier', setup })` donde `setup` construye el contribution y llama a `registerContribution(ctx, …)` y registra las tools (`makeVerifyTool(ctx.location.directory)`, `makeVisualDiffTool(ctx.location.directory)`).
 
 - [ ] **Step 1 (RED): test del wiring**

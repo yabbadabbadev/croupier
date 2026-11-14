@@ -13,7 +13,7 @@ Portar el plugin de `@opencode-ai/plugin` (API **V1**) a `@opencode/plugin` (API
 ## Por qué
 
 - En OpenCode 2.3.0 el plugin no carga: `Plugin must export a default definition with an id and an
-  effect or setup function`.
+effect or setup function`.
 - Decisión del usuario: **solo V2** (sin compatibilidad con V1). Implica bump mayor.
 
 ## Objetivos
@@ -58,7 +58,7 @@ Portar el plugin de `@opencode-ai/plugin` (API **V1**) a `@opencode/plugin` (API
 1. **`package.json`**: dependencia `@opencode/plugin` en vez de `@opencode-ai/plugin`; bump mayor
    (0.3.x → 0.4.0 o 1.0.0) — decidir con release-please.
 2. **`src/plugin.ts`** → `Plugin.define({ id: "croupier", setup })`. `setup` construye el
-   *contribution* con `assets.ts`, registra las tools y aplica los transforms de dominio.
+   _contribution_ con `assets.ts`, registra las tools y aplica los transforms de dominio.
 3. **`src/config-contribution.ts`**: sustituir `applyConfigContribution(cfg, …)` (mutaba la config
    global) por `registerContribution(ctx, contribution)` que:
    - agentes → `ctx.agent.transform` (`update` por id, **defaults incondicionales**; el usuario gana
@@ -66,7 +66,7 @@ Portar el plugin de `@opencode-ai/plugin` (API **V1**) a `@opencode/plugin` (API
    - comando → `ctx.command.transform` (envuelve el template en `execute`; registro incondicional),
    - skill → `ctx.skill.transform` (lee `SKILL.md` y `add`),
    - mcp → `ctx.mcp.transform` (set condicional).
-   El *shape* del contribution pasa a V2: agente `{ description, mode, hidden, system, permissions }`.
+     El _shape_ del contribution pasa a V2: agente `{ description, mode, hidden, system, permissions }`.
 4. **`src/assets.ts`**: `loadAgentDefinitions` mapea frontmatter → campos V2 (`prompt`→`system`,
    `permission`→`permissions`, dropea `temperature`); `loadCommand` devuelve el template + agent.
 5. **`src/tools/*`**: convertir `tool({args: tool.schema…})` a `input` JSON Schema; `context.directory`

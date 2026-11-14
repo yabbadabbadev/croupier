@@ -31,7 +31,10 @@ export function expandTemplate(template: string, args: string): string {
   }
   if (/\$\d+/.test(template)) {
     const parts = args.trim().length > 0 ? args.trim().split(/\s+/) : []
-    return template.replace(/\$(\d+)/g, (_, n: string) => parts[Number(n) - 1] ?? '')
+    return template.replace(
+      /\$(\d+)/g,
+      (_, n: string) => parts[Number(n) - 1] ?? '',
+    )
   }
   return args.trim().length > 0 ? `${template}\n\n${args}` : template
 }

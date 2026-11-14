@@ -1,5 +1,9 @@
 import { loadAgentDefinitions, loadCommand, loadSkill } from './assets.js'
-import { makeCommandExecute, type CommandExecute, type SessionClient } from './command.js'
+import {
+  makeCommandExecute,
+  type CommandExecute,
+  type SessionClient,
+} from './command.js'
 
 export interface PermissionRule {
   action: string

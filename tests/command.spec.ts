@@ -22,7 +22,8 @@ describe('makeCommandExecute', () => {
   it('selecciona el agente y envía el prompt con UN solo argumento', async () => {
     const calls: unknown[] = []
     const session = {
-      switchAgent: async (i: { agent: string }) => calls.push(['agent', i.agent]),
+      switchAgent: async (i: { agent: string }) =>
+        calls.push(['agent', i.agent]),
       prompt: async (i: { text: string }) => calls.push(['prompt', i.text]),
     }
     const exec = makeCommandExecute(

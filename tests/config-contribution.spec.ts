@@ -54,15 +54,18 @@ function fakeCtx(existingMcp = false) {
       },
     },
     command: {
-      transform: async (cb: any) => cb({ add: (d: any) => calls.push(`command:${d.name}`) }),
+      transform: async (cb: any) =>
+        cb({ add: (d: any) => calls.push(`command:${d.name}`) }),
     },
     skill: {
-      transform: async (cb: any) => cb({ add: (s: any) => calls.push(`skill:${s.id}`) }),
+      transform: async (cb: any) =>
+        cb({ add: (s: any) => calls.push(`skill:${s.id}`) }),
     },
     mcp: {
       transform: async (cb: any) =>
         cb({
-          get: () => (existingMcp ? { type: 'local', command: ['x'] } : undefined),
+          get: () =>
+            existingMcp ? { type: 'local', command: ['x'] } : undefined,
           set: (n: string) => calls.push(`mcp:${n}`),
         }),
     },
