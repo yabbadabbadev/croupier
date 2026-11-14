@@ -1,10 +1,16 @@
-export interface AgentConfigContribution {
-  description: string
-  mode: 'primary' | 'subagent' | 'all'
+export interface PermissionRule {
+  action: string
+  resource: string
+  effect: 'allow' | 'deny' | 'ask'
+}
+
+/** Defaults de agente en shape V2 (registrables vía `ctx.agent.transform`). */
+export interface AgentDefaults {
+  description?: string
+  mode?: 'primary' | 'subagent' | 'all'
   hidden?: boolean
-  temperature?: number
-  permission?: Record<string, unknown>
-  prompt: string
+  system: string
+  permissions?: PermissionRule[]
 }
 
 export interface CommandContribution {
@@ -16,11 +22,11 @@ export interface CommandContribution {
 export interface McpContribution {
   type: 'local'
   command: string[]
-  enabled: boolean
+  disabled?: boolean
 }
 
 export interface ConfigContribution {
-  agents: Record<string, AgentConfigContribution>
+  agents: Record<string, AgentDefaults>
   command?: CommandContribution
   skillsPaths: string[]
   mcp: Record<string, McpContribution>
@@ -37,7 +43,7 @@ export async function buildConfigContribution(
   options: BuildOptions = {},
 ): Promise<ConfigContribution> {
   const loaded = await loadAgentDefinitions(assetsDir)
-  const agents: Record<string, AgentConfigContribution> = {}
+  const agents: Record<string, AgentDefaults> = {}
   for (const agent of loaded) agents[agent.name] = agent.config
 
   const command = await loadCommand(assetsDir)
@@ -58,7 +64,6 @@ export async function buildConfigContribution(
               '--headless',
               '--isolated',
             ],
-            enabled: true,
           },
         }
       : {},

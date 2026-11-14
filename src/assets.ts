@@ -2,13 +2,14 @@ import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parse } from 'yaml'
 import type {
-  AgentConfigContribution,
+  AgentDefaults,
   CommandContribution,
 } from './config-contribution.js'
+import { permissionToRules } from './permissions.js'
 
 export interface LoadedAgent {
   name: string
-  config: AgentConfigContribution
+  config: AgentDefaults
 }
 
 function frontmatter(raw: string): { data: Record<string, any>; body: string } {
@@ -34,9 +35,8 @@ export async function loadAgentDefinitions(
         description: data.description,
         mode: data.mode,
         hidden: data.hidden,
-        temperature: data.temperature,
-        permission: data.permission,
-        prompt: body,
+        system: body,
+        permissions: permissionToRules(data.permission),
       },
     })
   }
