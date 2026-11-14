@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@opencode/plugin": "^2.3.0",
-    "pixelmatch": "^7.2.0",
+    "pixelmatch": "^8.0.0",
     "pngjs": "^7.0.0",
     "yaml": "^2.9.1"
   },
