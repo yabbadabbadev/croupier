@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.0](https://github.com/yabbadabbadev/croupier/compare/v0.3.3...v0.4.0) (2026-11-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* ya no soporta la API de plugins V1 (@opencode-ai/plugin).
+
+### Features
+
+* portar croupier a la API de plugins de OpenCode 2 ([5028281](https://github.com/yabbadabbadev/croupier/commit/50282815be437af5f011992cb47801d0eea99525))
+
+
+### Bug Fixes
+
+* comando /croupier usa la firma de execute de V2 ([27e8c16](https://github.com/yabbadabbadev/croupier/commit/27e8c167b8a2c41ecef92c81088a9e154605e686))
+
 ## [0.3.3](https://github.com/yabbadabbadev/croupier/compare/v0.3.2...v0.3.3) (2026-09-27)
 
 
