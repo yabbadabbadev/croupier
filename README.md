@@ -23,7 +23,7 @@ progress checklist.
 ## Requirements
 
 - **Node.js >= 20** (see `.nvmrc`).
-- **opencode** with plugin support (`@opencode-ai/plugin` `^1.18`).
+- **OpenCode 2** (`@opencode/plugin` `^2`).
 - **The target project uses pnpm + `tsc` + `vitest`.** `croupier_verify` runs
   `pnpm exec tsc --noEmit` and `pnpm exec vitest run` in the project.
 - For the visual step: the project must be runnable locally (a dev server) and
@@ -47,21 +47,24 @@ Then point your opencode config at the built plugin. Use the **global** config
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["/absolute/path/to/croupier/dist/plugin.js"]
+  "plugins": ["/absolute/path/to/croupier"]
 }
 ```
+
+(En OpenCode 2 las rutas locales de plugin deben ser un **directorio**; `dist/plugin.js`
+se resuelve desde el `main`/`exports` del `package.json`.)
 
 ### From npm (once published)
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["@yabbadabbadev/croupier"]
+  "plugins": ["@yabbadabbadev/croupier"]
 }
 ```
 
-**Restart opencode** after installing or editing the config — the plugin injects
-on startup and there is no hot reload. On restart it registers:
+OpenCode 2 recarga la configuración y los plugins al guardar (o con `/reload`).
+El plugin registra:
 
 - agents `croupier-orchestrator` (primary) plus the hidden subagents
   `croupier-planner`, `croupier-test-writer`, `croupier-implementer`,
@@ -93,15 +96,16 @@ opencode config (global or project):
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "agent": {
+  "agents": {
     "croupier-orchestrator": { "model": "provider/model-id" },
     "croupier-implementer": { "model": "{env:CROUPIER_IMPL_MODEL}" }
   }
 }
 ```
 
-`{env:VAR}` and `{file:...}` values are supported. Restart opencode after the
-change. Plugin defaults never overwrite a value you set.
+`{env:VAR}` and `{file:...}` values are supported. Guarda (o `/reload`) para
+aplicar el cambio. Los defaults del plugin no pisan un valor que tú definas
+(la config se aplica después de los transforms del plugin).
 
 ### Report policy
 

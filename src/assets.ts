@@ -4,6 +4,7 @@ import { parse } from 'yaml'
 import type {
   AgentDefaults,
   CommandContribution,
+  SkillContribution,
 } from './config-contribution.js'
 import { permissionToRules } from './permissions.js'
 
@@ -60,4 +61,25 @@ export async function loadCommand(
 
 export function skillsDir(assetsDir: string): string {
   return join(assetsDir, 'skills')
+}
+
+const SKILL_ID = 'croupier-workflow'
+
+export async function loadSkill(
+  assetsDir: string,
+): Promise<SkillContribution | undefined> {
+  const path = join(assetsDir, 'skills', SKILL_ID, 'SKILL.md')
+  try {
+    const raw = await readFile(path, 'utf8')
+    const { data, body } = frontmatter(raw)
+    return {
+      id: SKILL_ID,
+      name: (data.name as string) ?? SKILL_ID,
+      description: (data.description as string) ?? '',
+      path,
+      content: body,
+    }
+  } catch {
+    return undefined
+  }
 }

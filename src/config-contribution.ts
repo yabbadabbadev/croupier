@@ -1,3 +1,6 @@
+import { loadAgentDefinitions, loadCommand, loadSkill } from './assets.js'
+import { makeCommandExecute, type CommandExecute } from './command.js'
+
 export interface PermissionRule {
   action: string
   resource: string
@@ -19,6 +22,14 @@ export interface CommandContribution {
   template: string
 }
 
+export interface SkillContribution {
+  id: string
+  name: string
+  description: string
+  path: string
+  content: string
+}
+
 export interface McpContribution {
   type: 'local'
   command: string[]
@@ -28,11 +39,9 @@ export interface McpContribution {
 export interface ConfigContribution {
   agents: Record<string, AgentDefaults>
   command?: CommandContribution
-  skillsPaths: string[]
+  skill?: SkillContribution
   mcp: Record<string, McpContribution>
 }
-
-import { loadAgentDefinitions, loadCommand, skillsDir } from './assets.js'
 
 export interface BuildOptions {
   mcp?: boolean
@@ -47,12 +56,13 @@ export async function buildConfigContribution(
   for (const agent of loaded) agents[agent.name] = agent.config
 
   const command = await loadCommand(assetsDir)
+  const skill = await loadSkill(assetsDir)
   const includeMcp = options.mcp !== false
 
   return {
     agents,
     ...(command ? { command } : {}),
-    skillsPaths: [skillsDir(assetsDir)],
+    ...(skill ? { skill } : {}),
     mcp: includeMcp
       ? {
           'chrome-devtools': {
@@ -70,31 +80,77 @@ export async function buildConfigContribution(
   }
 }
 
-export function applyConfigContribution(
-  cfg: Record<string, any>,
+// --- Registro vía transforms de dominio (API V2) ---
+
+interface AgentEditorLike {
+  update(id: string, update: (agent: Record<string, unknown>) => void): void
+}
+interface CommandEditorLike {
+  add(def: {
+    name: string
+    description?: string
+    execute: CommandExecute
+  }): void
+}
+interface SkillEditorLike {
+  add(skill: SkillContribution): void
+}
+interface McpEditorLike {
+  get(name: string): unknown
+  set(name: string, config: McpContribution): void
+}
+
+export interface RegisterContext {
+  agent: { transform(cb: (editor: AgentEditorLike) => void): Promise<unknown> }
+  command: {
+    transform(cb: (editor: CommandEditorLike) => void): Promise<unknown>
+  }
+  skill: { transform(cb: (editor: SkillEditorLike) => void): Promise<unknown> }
+  mcp: { transform(cb: (editor: McpEditorLike) => void): Promise<unknown> }
+}
+
+/**
+ * Registra el contribution en la API V2. Los overrides del usuario ganan por el
+ * layering de config de OpenCode (la config se aplica después de los transforms),
+ * así que aquí se setean los defaults incondicionalmente salvo el MCP, que solo se
+ * define si el usuario no tiene ya un servidor con ese nombre.
+ */
+export async function registerContribution(
+  ctx: RegisterContext,
   contribution: ConfigContribution,
-): void {
-  cfg.agent = cfg.agent ?? {}
-  for (const [name, defaults] of Object.entries(contribution.agents)) {
-    cfg.agent[name] = { ...defaults, ...cfg.agent[name] }
-  }
-
-  if (contribution.command && !cfg.command?.['croupier']) {
-    cfg.command = cfg.command ?? {}
-    cfg.command['croupier'] = contribution.command
-  }
-
-  if (contribution.skillsPaths.length > 0) {
-    cfg.skills = cfg.skills ?? {}
-    const existing: string[] = cfg.skills.paths ?? []
-    for (const path of contribution.skillsPaths) {
-      if (!existing.includes(path)) existing.push(path)
+): Promise<void> {
+  await ctx.agent.transform((editor) => {
+    for (const [id, defaults] of Object.entries(contribution.agents)) {
+      editor.update(id, (agent) => {
+        for (const [key, value] of Object.entries(defaults)) {
+          if (value !== undefined) agent[key] = value
+        }
+      })
     }
-    cfg.skills.paths = existing
+  })
+
+  if (contribution.command) {
+    const command = contribution.command
+    await ctx.command.transform((editor) => {
+      editor.add({
+        name: 'croupier',
+        description: command.description,
+        execute: makeCommandExecute(command),
+      })
+    })
   }
 
-  cfg.mcp = cfg.mcp ?? {}
-  for (const [name, defaults] of Object.entries(contribution.mcp)) {
-    if (!cfg.mcp[name]) cfg.mcp[name] = defaults
+  if (contribution.skill) {
+    const skill = contribution.skill
+    await ctx.skill.transform((editor) => editor.add(skill))
+  }
+
+  const mcp = contribution.mcp
+  if (Object.keys(mcp).length > 0) {
+    await ctx.mcp.transform((editor) => {
+      for (const [name, config] of Object.entries(mcp)) {
+        if (!editor.get(name)) editor.set(name, config)
+      }
+    })
   }
 }

@@ -45,7 +45,7 @@
     "prepublishOnly": "pnpm run typecheck && pnpm test && pnpm run build"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "^1.18.32",
+    "@opencode/plugin": "^2.3.0",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
     "yaml": "^2.9.1"
